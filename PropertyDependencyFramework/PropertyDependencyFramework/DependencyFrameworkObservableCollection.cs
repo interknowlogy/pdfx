@@ -60,7 +60,7 @@ namespace PropertyDependencyFramework
 
 				if (DependencyFrameworkNotifyPropertyChangedScope.AreSourcePropertyChangesQueuedForDeferredExecution)
 				{
-					DependencyFrameworkNotifyPropertyChangedScope.Current.QueueSourceCollectionChangeForDeferredExecution(() => base.OnCollectionChanged(e));
+					DependencyFrameworkNotifyPropertyChangedScope.Current.DeferSourceCollectionChangeForDeferredExecution(() => base.OnCollectionChanged(e));
 					return;
 				}
 

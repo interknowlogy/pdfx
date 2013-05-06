@@ -501,7 +501,7 @@ namespace PropertyDependencyFramework
 			{
 				if (DependencyFrameworkNotifyPropertyChangedScope.AreSourcePropertyChangesQueuedForDeferredExecution)
 				{
-					DependencyFrameworkNotifyPropertyChangedScope.Current.QueueSourcePropertyChangeForDeferredExecution(this, PropertyNameResolver.GetPropertyName(propertyExpression));
+					DependencyFrameworkNotifyPropertyChangedScope.Current.DeferSourcePropertyChangeForDeferredExecution(this, PropertyNameResolver.GetPropertyName(propertyExpression));
 				}
 				else
 				{
@@ -592,8 +592,16 @@ namespace PropertyDependencyFramework
 					OnPropertyChanged(property);
 				}
 
-				foreach (CallbackContainer callback in propertyDependencyRegistration.Callbacks)
-					callback.Call();
+			    if (DependencyFrameworkNotifyPropertyChangedScope.ArePropertyChangesCollected)
+			    {
+                    foreach (CallbackContainer callback in propertyDependencyRegistration.Callbacks)
+                        DependencyFrameworkNotifyPropertyChangedScope.Current.QueueCollectionCallback(callback);
+			    }
+                else
+			    {
+			        foreach (CallbackContainer callback in propertyDependencyRegistration.Callbacks)
+			            callback.Call();
+			    }
 			}
 		}
 
