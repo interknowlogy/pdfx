@@ -1,0 +1,522 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:wpfSample="clr-namespace:WPFSample"
+                    xmlns:demonstrationShowcases="clr-namespace:WPFSample.DemonstrationShowcases">
+    <DataTemplate DataType="{x:Type demonstrationShowcases:SimpleCollectionDependencyDemonstrationVM}">
+        <Viewbox Stretch="Uniform">
+
+            <Grid Background="White"
+                  Width="1366"
+                  Height="768">
+                <Grid.Resources>
+                    <Style TargetType="Button">
+                        <Style.Setters>
+                            <Setter Property="Background"
+                                    Value="Black" />
+                            <Setter Property="Foreground"
+                                    Value="White" />
+                        </Style.Setters>
+                    </Style>
+                    <DataTemplate x:Key="ChildTemplate">
+                        <Grid Width="309"
+                              Height="100">
+                            <Rectangle Fill="White"
+                                       HorizontalAlignment="Stretch"
+                                       Stroke="Black"
+                                       VerticalAlignment="Stretch"
+                                       StrokeThickness="3"
+                                       RadiusX="5"
+                                       RadiusY="5" />
+                            <Grid Margin="0,-30,0,0">
+                                <Ellipse Fill="#FF509545"
+                                         HorizontalAlignment="Left"
+                                         Height="73"
+                                         Margin="27,43,0,0"
+                                         Stroke="Black"
+                                         VerticalAlignment="Top"
+                                         Width="74" />
+                                <Rectangle Fill="#FF0A0101"
+                                           HorizontalAlignment="Left"
+                                           Height="5.103"
+                                           Margin="116.562,77.222,0,0"
+                                           Stroke="Black"
+                                           VerticalAlignment="Top"
+                                           Width="57.052"
+                                           RenderTransformOrigin="0.5,0.5"
+                                           UseLayoutRounding="False"
+                                           >
+                                    <Rectangle.RenderTransform>
+                                        <RotateTransform Angle="-0.481"
+                                                             />
+                                    </Rectangle.RenderTransform>
+                                </Rectangle>
+                                <TextBox HorizontalAlignment="Left"
+                                         Margin="31,64,0,0"
+                                         TextWrapping="Wrap"
+                                         Text="{Binding B1, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         VerticalAlignment="Top"
+                                         Height="33"
+                                         Width="65"
+                                         TextAlignment="Center"
+                                         FontSize="24" />
+                                <TextBlock HorizontalAlignment="Left"
+                                           Margin="88,103,0,0"
+                                           TextWrapping="Wrap"
+                                           Text="B1"
+                                           VerticalAlignment="Top"
+                                           Foreground="#FF170101" />
+                                <Ellipse Fill="#FF454595"
+                                         HorizontalAlignment="Left"
+                                         Height="73"
+                                         Margin="211,42,0,0"
+                                         Stroke="Black"
+                                         VerticalAlignment="Top"
+                                         Width="74" />
+                                <TextBlock HorizontalAlignment="Left"
+                                           Margin="212,65,0,0"
+                                           TextWrapping="Wrap"
+                                           Text="{Binding A1, UpdateSourceTrigger=PropertyChanged}"
+                                           VerticalAlignment="Top"
+                                           FontSize="24"
+                                           Width="69"
+                                           Height="29"
+                                           TextAlignment="Center" />
+                                <Path Data="M150,250 L200,200 L250,250"
+                                      Fill="#FF0A0101"
+                                      HorizontalAlignment="Left"
+                                      Height="27.831"
+                                      Margin="175.895,66.066,0,0"
+                                      Stretch="Fill"
+                                      Stroke="Black"
+                                      UseLayoutRounding="False"
+                                      VerticalAlignment="Top"
+                                      Width="22.503"
+                                      RenderTransformOrigin="0.5,0.5">
+                                    <Path.RenderTransform>
+                                        <RotateTransform Angle="88.999" />
+                                    </Path.RenderTransform>
+                                </Path>
+                                <TextBlock HorizontalAlignment="Left"
+                                           Margin="273,102,0,0"
+                                           TextWrapping="Wrap"
+                                           Text="A1"
+                                           VerticalAlignment="Top"
+                                           Foreground="#FF170101" />
+                                <TextBlock HorizontalAlignment="Left"
+                                           Height="40"
+                                           Margin="134,35,0,0"
+                                           TextWrapping="Wrap"
+                                           Text="x3"
+                                           VerticalAlignment="Top"
+                                           Width="48"
+                                           Foreground="#FF1313DE"
+                                           FontSize="32"
+                                           FontWeight="Bold" />
+                                <Button Margin="5, 35, 0,0"
+                                        VerticalAlignment="Top"
+                                        HorizontalAlignment="Left"
+                                        Content="-"
+                                        Width="20"
+                                        Height="30"
+                                        Command="{Binding RemoveCommand}" />
+                            </Grid>
+                        </Grid>
+                    </DataTemplate>
+                </Grid.Resources>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="60,205,0,0"
+                           TextWrapping="Wrap"
+                           Text="A:"
+                           VerticalAlignment="Top"
+                           Foreground="#FF170101"
+                           FontSize="48" />
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="60,355,0,0"
+                           TextWrapping="Wrap"
+                           Text="B:"
+                           VerticalAlignment="Top"
+                           Foreground="#FF170101"
+                           FontSize="48" />
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="396,34,0,0"
+                           TextWrapping="Wrap"
+                           VerticalAlignment="Top"
+                           FontSize="24"
+                           FontStyle="Italic">
+    		<Run Foreground="#FF170101"
+                    Text="Simple Collection Dependency Demonstration" />
+    		<LineBreak />
+    		<Run Foreground="#FF170101" />
+                </TextBlock>
+
+                <Grid Margin="188,118,317,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Rectangle Fill="Transparent"
+                               Stroke="Black"
+                               VerticalAlignment="Stretch"
+                               HorizontalAlignment="Stretch"
+                               StrokeThickness="3"
+                               RadiusX="5"
+                               RadiusY="5" />
+                    <ScrollViewer HorizontalAlignment="Left"
+                                  Height="300"
+                                  MaxHeight="300"
+                                  Grid.Row="0"
+                                  Margin="36,80,0,40"
+                                  VerticalAlignment="Stretch">
+                        <ItemsControl HorizontalAlignment="Left"
+                                      ItemsSource="{Binding Destination.Children}"
+                                      Grid.Row="0"
+                                      VerticalAlignment="Stretch"
+                                      ItemTemplate="{StaticResource ChildTemplate}"
+                                      BorderBrush="Black">
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <Rectangle Fill="Black"
+                               HorizontalAlignment="Left"
+                               Height="4"
+                               Margin="0,33,0,0"
+                               Stroke="Black"
+                               StrokeThickness="2"
+                               VerticalAlignment="Top"
+                               Width="857" />
+                    <TextBlock HorizontalAlignment="Left"
+                               TextAlignment="Center"
+                               Height="30"
+                               Margin="0,6,0,0"
+                               TextWrapping="Wrap"
+                               Foreground="Black"
+                               Text="Destination"
+                               VerticalAlignment="Top"
+                               Width="847"
+                               FontSize="21.333" />
+                    <Grid Margin="10,42,143,-42">
+                        <Grid Margin="90,10,-90,-10">
+                            <Ellipse Fill="#FF509545"
+                                     HorizontalAlignment="Left"
+                                     Height="73"
+                                     Margin="630,185,0,0"
+                                     Stroke="Black"
+                                     VerticalAlignment="Top"
+                                     Width="74" />
+                            <Rectangle Fill="#FF0A0101"
+                                       HorizontalAlignment="Left"
+                                       Height="5.103"
+                                       Margin="588.591,157.222,0,0"
+                                       Stroke="Black"
+                                       VerticalAlignment="Top"
+                                       Width="57.052"
+                                       RenderTransformOrigin="0.5,0.5"
+                                       UseLayoutRounding="False"
+                                       >
+                                <Rectangle.RenderTransform>
+                                    <RotateTransform Angle="-134.659"
+                                                         />
+                                </Rectangle.RenderTransform>
+                            </Rectangle>
+                            <TextBox HorizontalAlignment="Left"
+                                     Margin="634,206,0,0"
+                                     TextWrapping="Wrap"
+                                     Text="{Binding Destination.B2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     VerticalAlignment="Top"
+                                     Height="33"
+                                     Width="65"
+                                     TextAlignment="Center"
+                                     FontSize="24" />
+                            <TextBlock HorizontalAlignment="Left"
+                                       Margin="691,245,0,0"
+                                       TextWrapping="Wrap"
+                                       Text="B2"
+                                       VerticalAlignment="Top"
+                                       Foreground="#FF170101" />
+                            <Ellipse Fill="#FF454595"
+                                     HorizontalAlignment="Left"
+                                     Height="73"
+                                     Margin="512,43,0,0"
+                                     Stroke="Black"
+                                     VerticalAlignment="Top"
+                                     Width="74" />
+                            <TextBlock HorizontalAlignment="Left"
+                                       Margin="517,66,0,0"
+                                       TextWrapping="Wrap"
+                                       Text="{Binding Destination.A1, UpdateSourceTrigger=PropertyChanged}"
+                                       VerticalAlignment="Top"
+                                       FontSize="24"
+                                       Width="69"
+                                       Height="29"
+                                       TextAlignment="Center" />
+                            <Path Data="M150,250 L200,200 L250,250"
+                                  Fill="#FF0A0101"
+                                  HorizontalAlignment="Left"
+                                  Height="27.831"
+                                  Margin="582.924,122.066,0,0"
+                                  Stretch="Fill"
+                                  Stroke="Black"
+                                  UseLayoutRounding="False"
+                                  VerticalAlignment="Top"
+                                  Width="22.503"
+                                  RenderTransformOrigin="0.5,0.5">
+                                <Path.RenderTransform>
+                                    <RotateTransform Angle="-43.337" />
+                                </Path.RenderTransform>
+                            </Path>
+                            <TextBlock HorizontalAlignment="Left"
+                                       Margin="578,103,0,0"
+                                       TextWrapping="Wrap"
+                                       Text="A1"
+                                       VerticalAlignment="Top"
+                                       Foreground="#FF170101" />
+
+                            <TextBlock HorizontalAlignment="Left"
+                                       Height="40"
+                                       Margin="592,145,0,0"
+                                       TextWrapping="Wrap"
+                                       Text="+"
+                                       VerticalAlignment="Top"
+                                       Width="48"
+                                       Foreground="#FF1313DE"
+                                       FontSize="32"
+                                       FontWeight="Bold" />
+                            <Ellipse Fill="#FF454595"
+                                     HorizontalAlignment="Left"
+                                     Height="73"
+                                     Margin="406,185,0,0"
+                                     Stroke="Black"
+                                     VerticalAlignment="Top"
+                                     Width="74" />
+                            <TextBlock HorizontalAlignment="Left"
+                                       Margin="411,208,0,0"
+                                       TextWrapping="Wrap"
+                                       Text="{Binding Destination.B1, UpdateSourceTrigger=PropertyChanged}"
+                                       VerticalAlignment="Top"
+                                       FontSize="24"
+                                       Width="69"
+                                       Height="29"
+                                       TextAlignment="Center" />
+                            <TextBlock HorizontalAlignment="Left"
+                                       Margin="472,245,0,0"
+                                       TextWrapping="Wrap"
+                                       Text="B1"
+                                       VerticalAlignment="Top"
+                                       Foreground="#FF170101" />
+                            <Rectangle Fill="#FF0A0101"
+                                       HorizontalAlignment="Left"
+                                       Height="6.431"
+                                       Margin="448.166,151.838,0,0"
+                                       Stroke="Black"
+                                       VerticalAlignment="Top"
+                                       Width="65.503"
+                                       RenderTransformOrigin="0.5,0.5"
+                                       UseLayoutRounding="False"
+                                       >
+                                <Rectangle.RenderTransform>
+                                    <RotateTransform Angle="-232.789"
+                                                         />
+                                </Rectangle.RenderTransform>
+                            </Rectangle>
+                            <Path Data="M150,250 L200,200 L250,250"
+                                  Fill="#FF0A0101"
+                                  HorizontalAlignment="Left"
+                                  Height="27.831"
+                                  Margin="492.924,109.066,0,0"
+                                  Stretch="Fill"
+                                  Stroke="Black"
+                                  UseLayoutRounding="False"
+                                  VerticalAlignment="Top"
+                                  Width="22.503"
+                                  RenderTransformOrigin="0.5,0.5">
+                                <Path.RenderTransform>
+                                    <RotateTransform Angle="37.624" />
+                                </Path.RenderTransform>
+                            </Path>
+                            <TextBlock HorizontalAlignment="Left"
+                                       Height="40"
+                                       Margin="485,145,0,0"
+                                       TextWrapping="Wrap"
+                                       Text="+"
+                                       VerticalAlignment="Top"
+                                       Width="48"
+                                       Foreground="#FF1313DE"
+                                       FontSize="32"
+                                       FontWeight="Bold" />
+                            <Rectangle Fill="#FF0A0101"
+                                       HorizontalAlignment="Left"
+                                       Height="5.425"
+                                       Margin="274.166,221.841,0,0"
+                                       Stroke="Black"
+                                       VerticalAlignment="Top"
+                                       Width="109.503"
+                                       RenderTransformOrigin="0.5,0.5"
+                                       UseLayoutRounding="False"
+                                       >
+                                <Rectangle.RenderTransform>
+                                    <RotateTransform Angle="-180.009"
+                                                         />
+                                </Rectangle.RenderTransform>
+                            </Rectangle>
+                            <Path Data="M150,250 L200,200 L250,250"
+                                  Fill="#FF0A0101"
+                                  HorizontalAlignment="Left"
+                                  Height="27.831"
+                                  Margin="378.924,210.066,0,0"
+                                  Stretch="Fill"
+                                  Stroke="Black"
+                                  UseLayoutRounding="False"
+                                  VerticalAlignment="Top"
+                                  Width="22.503"
+                                  RenderTransformOrigin="0.5,0.5">
+                                <Path.RenderTransform>
+                                    <RotateTransform Angle="89.906" />
+                                </Path.RenderTransform>
+                            </Path>
+                            <TextBlock HorizontalAlignment="Left"
+                                       Height="40"
+                                       Margin="278,188,0,0"
+                                       TextWrapping="Wrap"
+                                       Text="Sum of all"
+                                       VerticalAlignment="Top"
+                                       Width="185"
+                                       Foreground="#FF1313DE"
+                                       FontSize="24"
+                                       FontWeight="Bold" />
+                            <TextBlock HorizontalAlignment="Left"
+                                       Margin="0,-4,0,0"
+                                       TextWrapping="Wrap"
+                                       VerticalAlignment="Top">
+    					<Run Foreground="#FF1B1818"
+                                FontSize="21.333"
+                                Text="Children" />
+                            </TextBlock>
+                        </Grid>
+                    </Grid>
+                    <Button Content="Add"
+                            Command="{Binding Destination.AddCommand}"
+                            HorizontalAlignment="Left"
+                            Margin="184,42,0,0"
+                            Width="80"
+                            Height="30"
+                            VerticalAlignment="Top" />
+                </Grid>
+
+                <Grid Margin="60,20,0,0"
+                      x:Name="Legend"
+                      Grid.Row="1">
+                    <TextBlock HorizontalAlignment="Left"
+                               Margin="2,0,0,0"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Top">
+    			<Run Foreground="#FF1B1818"
+                        FontSize="21.333"
+                        Text="Legend:" />
+                    </TextBlock>
+                    <Ellipse Fill="#FF454595"
+                             HorizontalAlignment="Left"
+                             Height="35"
+                             Margin="2,62,0,0"
+                             Stroke="Black"
+                             VerticalAlignment="Top"
+                             Width="35" />
+                    <TextBlock HorizontalAlignment="Left"
+                               Margin="128,70,0,0"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Top"
+                               Foreground="#FF0A0101"
+                               Height="22"
+                               FontSize="16">
+    			<Run Text="Evaluated Property (Read Only)" />
+    			<LineBreak />
+    			<LineBreak />
+    			<Run />
+                    </TextBlock>
+                    <Ellipse Fill="#FF509545"
+                             HorizontalAlignment="Left"
+                             Height="33"
+                             Margin="2,102,0,0"
+                             Stroke="Black"
+                             VerticalAlignment="Top"
+                             Width="35" />
+                    <TextBlock HorizontalAlignment="Left"
+                               Margin="128,107,0,0"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Top"
+                               Foreground="#FF0A0101"
+                               Height="22"
+                               FontSize="16"
+                               Text="Input Property" />
+                    <TextBlock HorizontalAlignment="Left"
+                               Height="40"
+                               Margin="8,22,0,0"
+                               TextWrapping="Wrap"
+                               Text="+ - / x"
+                               VerticalAlignment="Top"
+                               Width="102"
+                               Foreground="#FF1313DE"
+                               FontSize="32"
+                               FontWeight="Bold" />
+                    <TextBlock HorizontalAlignment="Left"
+                               Margin="31,89,0,0"
+                               TextWrapping="Wrap"
+                               Text="Name"
+                               VerticalAlignment="Top"
+                               Foreground="#FF170101"
+                               RenderTransformOrigin="-32.691,-18.534"
+                               FontSize="9.333" />
+                    <TextBlock HorizontalAlignment="Left"
+                               Margin="31,129,0,0"
+                               TextWrapping="Wrap"
+                               Text="Name"
+                               VerticalAlignment="Top"
+                               Foreground="#FF170101"
+                               RenderTransformOrigin="-32.691,-18.534"
+                               FontSize="9.333" />
+                    <TextBlock HorizontalAlignment="Left"
+                               Margin="128,33,0,0"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Top"
+                               Foreground="#FF0A0101"
+                               Height="22"
+                               FontSize="16"
+                               Text="Math operation applied to the source property's value before it is added to the sink property" />
+
+                    <Rectangle Fill="White"
+                               HorizontalAlignment="Left"
+                               Height="48"
+                               Margin="0,154,0,0"
+                               Stroke="Black"
+                               VerticalAlignment="Top"
+                               Width="110"
+                               StrokeThickness="3"
+                               RadiusX="5"
+                               RadiusY="5" />
+                    <Rectangle Fill="Black"
+                               HorizontalAlignment="Left"
+                               Height="4"
+                               Margin="2,173,0,0"
+                               Stroke="Black"
+                               StrokeThickness="2"
+                               VerticalAlignment="Top"
+                               Width="108" />
+                    <TextBlock HorizontalAlignment="Left"
+                               Margin="128,155,0,0"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Top"
+                               Foreground="#FF0A0101"
+                               Height="22"
+                               FontSize="16"
+                               Text="Entity, represented by an instance of a class" />
+                </Grid>
+            </Grid>
+
+        </Viewbox>
+    </DataTemplate>
+</ResourceDictionary>

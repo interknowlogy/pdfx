@@ -1,0 +1,138 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:wpfSample="clr-namespace:WPFSample"
+                    xmlns:demonstrationShowcases="clr-namespace:WPFSample.DemonstrationShowcases">
+    <DataTemplate DataType="{x:Type demonstrationShowcases:ConverterDemonstrationVM}">
+        <DataTemplate.Resources>
+            <wpfSample:CustomBooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"></wpfSample:CustomBooleanToVisibilityConverter>
+            <wpfSample:CustomBooleanToVisibilityConverter x:Key="BooleanToVisibilityConverterInverted"
+                                                          Inverted="True"></wpfSample:CustomBooleanToVisibilityConverter>
+        </DataTemplate.Resources>
+        <Viewbox Stretch="Uniform">
+            <Grid Background="White"
+                  Width="1366"
+                  Height="768">
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="532,8,0,0"
+                           TextWrapping="Wrap"
+                           VerticalAlignment="Top"
+                           FontSize="24"
+                           FontStyle="Italic">
+    		<Run Foreground="#FF170101"
+                    Text="Converter Demonstration" />
+    		<LineBreak />
+    		<Run Foreground="#FF170101" />
+                </TextBlock>
+                <Rectangle Fill="#FFF4F4F5"
+                           HorizontalAlignment="Left"
+                           Height="256"
+                           Margin="214,77,0,0"
+                           Stroke="Black"
+                           VerticalAlignment="Top"
+                           Width="883" />
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="233,148,0,0"
+                           TextWrapping="Wrap"
+                           Text="Your monthly income in EUR:"
+                           VerticalAlignment="Top"
+                           Foreground="Black"
+                           FontSize="18.667" />
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="233,196,0,0"
+                           TextWrapping="Wrap"
+                           Text="Your monthly income in USD:"
+                           VerticalAlignment="Top"
+                           Foreground="Black"
+                           FontSize="18.667" />
+                <TextBox HorizontalAlignment="Left"
+                         Margin="500,148,0,0"
+                         TextWrapping="Wrap"
+                         Text="{Binding MoneyInEUR, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         VerticalAlignment="Top"
+                         Width="155"
+                         Height="40" />
+                <TextBox HorizontalAlignment="Left"
+                         Margin="500,196,0,0"
+                         TextWrapping="Wrap"
+                         Text="{Binding MoneyInUSD, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         VerticalAlignment="Top"
+                         Width="155"
+                         Height="40" />
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="233,255,0,0"
+                           TextWrapping="Wrap"
+                           Text="According to a scientificly proven evaluation of your income you qualify as: "
+                           Foreground="Black"
+                           FontSize="18.667"
+                           VerticalAlignment="Top" />
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="888,255,0,0"
+                           TextWrapping="Wrap"
+                           Text="{Binding MoneyQuantification}"
+                           VerticalAlignment="Top"
+                           Width="155"
+                           Height="40" />
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="593,92,0,0"
+                           TextWrapping="Wrap"
+                           Text="Simple Converters"
+                           VerticalAlignment="Top"
+                           FontWeight="Bold"
+                           FontSize="18.667"
+                           Foreground="#FF0F0000" />
+                <Rectangle Fill="#FFF4F4F5"
+                           HorizontalAlignment="Left"
+                           Height="217"
+                           Margin="214,366,0,0"
+                           Stroke="Black"
+                           VerticalAlignment="Top"
+                           Width="883" />
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="593,376,0,0"
+                           TextWrapping="Wrap"
+                           Text="Wrapper Converters"
+                           VerticalAlignment="Top"
+                           FontWeight="Bold"
+                           FontSize="18.667"
+                           Foreground="#FF0F0000" />
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="236,412,0,0"
+                           TextWrapping="Wrap"
+                           Text="Person Full Name:"
+                           VerticalAlignment="Top"
+                           Foreground="Black"
+                           FontSize="18.667" />
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="409,412,0,0"
+                           TextWrapping="Wrap"
+                           Text="{Binding Person.FullName}"
+                           VerticalAlignment="Top"
+                           Width="155"
+                           Height="40" />
+                <Button Content="Go For a Run"
+                        Command="{Binding Person.GoForARunCommand}"
+                        Background="Black"
+                        Foreground="White"
+                        HorizontalAlignment="Left"
+                        Margin="236,523,0,0"
+                        VerticalAlignment="Top"
+                        Width="188" />
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="236,469,0,0"
+                           TextWrapping="Wrap"
+                           Text="Calories burned today:"
+                           VerticalAlignment="Top"
+                           Foreground="Black"
+                           FontSize="18.667" />
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="447,469,0,0"
+                           TextWrapping="Wrap"
+                           Text="{Binding Person.CaloriesBurnedToday}"
+                           VerticalAlignment="Top"
+                           Width="155"
+                           Height="40" />
+            </Grid>
+        </Viewbox>
+        
+    </DataTemplate>
+            
+</ResourceDictionary>

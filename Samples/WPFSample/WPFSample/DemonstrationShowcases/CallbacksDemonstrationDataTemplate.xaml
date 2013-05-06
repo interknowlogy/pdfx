@@ -1,0 +1,144 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:wpfSample="clr-namespace:WPFSample"
+                    xmlns:demonstrationShowcases="clr-namespace:WPFSample.DemonstrationShowcases">
+    <DataTemplate DataType="{x:Type demonstrationShowcases:CallbacksDemonstrationVM}">
+        <DataTemplate.Resources>
+            <wpfSample:CustomBooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"></wpfSample:CustomBooleanToVisibilityConverter>
+            <wpfSample:CustomBooleanToVisibilityConverter x:Key="BooleanToVisibilityConverterInverted"
+                                                          Inverted="True"></wpfSample:CustomBooleanToVisibilityConverter>
+        </DataTemplate.Resources>
+        <Viewbox Stretch="Uniform">
+            <Grid Background="White"
+                  Width="1366"
+                  Height="768">
+
+
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="532,8,0,0"
+                           TextWrapping="Wrap"
+                           VerticalAlignment="Top"
+                           FontSize="24"
+                           FontStyle="Italic">
+    		<Run Foreground="#FF170101"
+                    Text="Callbacks Demonstration" />
+    		<LineBreak />
+    		<Run Foreground="#FF170101" />
+                </TextBlock>
+                <Slider HorizontalAlignment="Left"
+                        Margin="423,80,0,0"
+                        VerticalAlignment="Top"
+                        Width="703"
+                        Maximum="100"
+                        SmallChange="1"
+                        LargeChange="10"
+                        TickFrequency="10"
+                        Background="#29060505"
+                        BorderBrush="Black"
+                        Foreground="#FF03000C"
+                        Value="{Binding SalesTax}" />
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="323,76,0,0"
+                           TextWrapping="Wrap"
+                           Text="Sales Tax:"
+                           VerticalAlignment="Top"
+                           FontSize="18.667"
+                           Foreground="Black" />
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="1143,76,0,0"
+                           TextWrapping="Wrap"
+                           Text="{Binding SalesTax}"
+                           VerticalAlignment="Top"
+                           FontSize="18.667"
+                           Foreground="Black" />
+                <ListBox HorizontalAlignment="Left"
+                         Height="338"
+                         Margin="579,180,0,0"
+                         VerticalAlignment="Top"
+                         Width="328"
+                         BorderBrush="Black"
+                         ItemsSource="{Binding Articles}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="-"
+                                        Background="Black"
+                                        Foreground="White"
+                                        Height="35"
+                                        Width="45"
+                                        Command="{Binding RemoveCommand}" />
+                                <TextBlock Text="Net Price: "
+                                           FontSize="14"
+                                           Foreground="Black"
+                                           VerticalAlignment="Center" />
+                                <TextBox HorizontalAlignment="Stretch"
+                                         Width="200"
+                                         Foreground="Black"
+                                         FontSize="14"
+                                         Text="{Binding NetPrice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="579,153,0,0"
+                           TextWrapping="Wrap"
+                           Text="Articles:"
+                           VerticalAlignment="Top"
+                           FontSize="18.667"
+                           Foreground="Black" />
+                <Button Content="+"
+                        Background="Black"
+                        HorizontalAlignment="Left"
+                        Foreground="White"
+                        Height="35"
+                        Width="45"
+                        Command="{Binding AddNewArticleCommand}"
+                        Margin="667,145,0,588" />
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="579,523,0,0"
+                           TextWrapping="Wrap"
+                           Text="Total Net:"
+                           VerticalAlignment="Top"
+                           FontSize="18.667"
+                           Foreground="Black" />
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="691,523,0,0"
+                           Width="200"
+                           TextWrapping="Wrap"
+                           Text="{Binding TotalNet}"
+                           VerticalAlignment="Top"
+                           FontSize="18.667"
+                           Foreground="Black" />
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="579,550,0,0"
+                           TextWrapping="Wrap"
+                           Text="Total Gross:"
+                           VerticalAlignment="Top"
+                           FontSize="18.667"
+                           Foreground="Black" />
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="691,550,0,0"
+                           Width="200"
+                           TextWrapping="Wrap"
+                           Text="{Binding TotalGross}"
+                           VerticalAlignment="Top"
+                           FontSize="18.667"
+                           Foreground="Black" />
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="323,586,0,0"
+                           TextWrapping="Wrap"
+                           Text="Log:"
+                           VerticalAlignment="Top"
+                           FontSize="18.667"
+                           Foreground="Black" />
+                <ListBox HorizontalAlignment="Left"
+                         Height="141"
+                         Margin="323,613,0,0"
+                         VerticalAlignment="Top"
+                         Width="803"
+                         BorderBrush="#FF110000"
+                         ItemsSource="{Binding LogEntries}" />
+            </Grid>
+        </Viewbox>
+    </DataTemplate>
+</ResourceDictionary>

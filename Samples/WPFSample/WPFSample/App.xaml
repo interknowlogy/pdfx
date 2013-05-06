@@ -1,0 +1,21 @@
+﻿<Application x:Class="WPFSample.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:wpfSample="clr-namespace:WPFSample"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="DemonstrationShowcases\SimplePropertyDependencyDataTemplate.xaml"></ResourceDictionary>
+                <ResourceDictionary Source="DemonstrationShowcases\SimplePropertyDependencyOldSqlDataTemplate.xaml"></ResourceDictionary>
+                <ResourceDictionary Source="DemonstrationShowcases\SmartPropertyDependencyDataTemplate.xaml"></ResourceDictionary>
+                <ResourceDictionary Source="DemonstrationShowcases\ExternalDependencyDataTemplate.xaml"></ResourceDictionary>
+                <ResourceDictionary Source="DemonstrationShowcases\DynamicExternalDependencyDataTemplate.xaml"></ResourceDictionary>
+                <ResourceDictionary Source="DemonstrationShowcases\SimpleCollectionDependencyDemonstrationDataTemplate.xaml"></ResourceDictionary>
+                <ResourceDictionary Source="DemonstrationShowcases\DynamicCollectionDependencyDemonstrationDataTemplate.xaml"></ResourceDictionary>
+                <ResourceDictionary Source="DemonstrationShowcases\CachingDemonstrationDataTemplate.xaml"></ResourceDictionary>
+                <ResourceDictionary Source="DemonstrationShowcases\ConverterDemonstrationDataTemplate.xaml"></ResourceDictionary>
+                <ResourceDictionary Source="DemonstrationShowcases\CallbacksDemonstrationDataTemplate.xaml"></ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

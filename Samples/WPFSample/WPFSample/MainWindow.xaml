@@ -1,0 +1,24 @@
+﻿<Window x:Class="WPFSample.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="clr-namespace:WPFSample.MetroBlendCompatibility"
+        Title="MainWindow"
+        WindowState="Maximized">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+
+        <ListBox ItemsSource="{Binding Showcases}"
+                 SelectedItem="{Binding SelectedShowcase, Mode=TwoWay}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}"></TextBlock>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+            </ListBox>
+        
+        <ContentPresenter Grid.Column="1" Content="{Binding SelectedShowcase}"></ContentPresenter>
+    </Grid>
+</Window>
