@@ -15,6 +15,77 @@ namespace WPFSample
 			set { UseSmartPropertyChangeNotificationByDefault = value; }
 		}
 
+		public int A1
+		{
+			get
+			{
+				Property(() => A1)
+					.Depends(p => p.On(() => B1)
+								   .AndOn(() => B2));
+
+				return B1 + B2;
+			}
+		}
+
+		public int B1
+		{
+			get
+			{
+				Property(() => B1)
+					.Depends(p => p.On(() => C1)
+								   .AndOn(() => C2));
+
+				return 2 * C1 - C2;
+			}
+		}
+
+		public int B2
+		{
+			get
+			{
+				Property(() => B2)
+					.Depends(p => p.On(() => C2)
+								   .AndOn(() => C3));
+
+				return -C2 + C3;
+			}
+		}
+
+		public int C1
+		{
+			get
+			{
+				Property(() => C1)
+					.Depends(p => p.On(() => D1)
+								   .AndOn(() => D2));
+
+				return D1 + D2;
+			}
+		}
+
+		public int C2
+		{
+			get
+			{
+				Property(() => C2)
+					.Depends(p => p.On(() => D3));
+
+				return 3 * D3;
+			}
+		}
+
+		public int C3
+		{
+			get
+			{
+				Property(() => C3)
+					.Depends(p => p.On(() => D4)
+								   .AndOn(() => D5));
+
+				return D4 + D5;
+			}
+		}
+
 		private int _d1;
 		public int D1
 		{
@@ -67,77 +138,6 @@ namespace WPFSample
 			{
 				_d5 = value;
 				NotifyPropertyChanged(() => D5);
-			}
-		}
-
-		public int C1
-		{
-			get
-			{
-				Property(() => C1)
-					.Depends(p => p.On(() => D1)
-					               .AndOn(() => D2));
-
-				return D1 + D2;
-			}
-		}
-
-		public int C2
-		{
-			get
-			{
-				Property(() => C2)
-					.Depends(p => p.On(() => D3));
-
-				return 3*D3;
-			}
-		}
-
-		public int C3
-		{
-			get
-			{
-				Property(() => C3)
-					.Depends(p => p.On(() => D4)
-					               .AndOn(() => D5));
-				
-				return D4 + D5;
-			}
-		}
-
-		public int B1
-		{
-			get
-			{
-				Property(() => B1)
-					.Depends(p => p.On(() => C1)
-					               .AndOn(() => C2));
-				
-				return 2*C1 - C2;
-			}
-		}
-
-		public int B2
-		{
-			get
-			{
-				Property(() => B2)
-					.Depends(p => p.On(() => C2)
-					               .AndOn(() => C3));
-				
-				return -C2 + C3;
-			}
-		}
-
-		public int A1
-		{
-			get
-			{
-				Property(() => A1)
-					.Depends(p => p.On(() => B1)
-					               .AndOn(() => B2));
-				
-				return B1 + B2;
 			}
 		}
 
