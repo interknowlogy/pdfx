@@ -215,7 +215,7 @@ namespace MVVMLightExtension
 			PDFx.TunnelledUnRegisterPropertyDependency(masterPropertyOwner, masterPropertyName, dependantPropertyName);
 		}
 
-		public Delegate[] GetPropertyChangedInTransactionInvocationList()
+		protected Delegate[] GetPropertyChangedInTransactionInvocationList()
 		{
 			if (PropertyChangedInTransaction==null)
 				return new Delegate[]{};
@@ -223,7 +223,7 @@ namespace MVVMLightExtension
 			return PropertyChangedInTransaction.GetInvocationList();
 		}
 
-		public Delegate[] GetPropertyChangedInvocationList()
+		protected Delegate[] GetPropertyChangedInvocationList()
 		{
 			var fieldInfo = typeof(ObservableObject).GetField(
 				"PropertyChanged", BindingFlags.Instance | BindingFlags.NonPublic);
