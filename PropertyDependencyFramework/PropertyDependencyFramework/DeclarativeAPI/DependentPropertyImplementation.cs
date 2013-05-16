@@ -35,13 +35,33 @@ namespace PropertyDependencyFramework
 
 		public IPropertyDependency OnCollectionChildProperty<TCollectionType, TCollectionItemPropertyType>(DependencyFrameworkObservableCollection<TCollectionType> collection, Expression<Func<TCollectionType, TCollectionItemPropertyType>> collectionChildProperty) where TCollectionType : INotifyPropertyChanged
 		{
+			return OnCollectionChildProperty((INotifyCollectionChanged)collection, collectionChildProperty);
+		}
+
+		public IPropertyDependency AndOnCollectionChildProperty<TCollectionType, TCollectionItemPropertyType>(DependencyFrameworkObservableCollection<TCollectionType> collection, Expression<Func<TCollectionType, TCollectionItemPropertyType>> collectionChildProperty) where TCollectionType : INotifyPropertyChanged
+		{
+			return OnCollectionChildProperty(collection, collectionChildProperty);
+		}
+
+		public IPropertyDependency OnCollectionChildProperty<TCollectionType, TCollectionItemPropertyType>(ObservableCollection<TCollectionType> collection, Expression<Func<TCollectionType, TCollectionItemPropertyType>> collectionChildProperty) where TCollectionType : INotifyPropertyChanged
+		{
+			return OnCollectionChildProperty((INotifyCollectionChanged) collection, collectionChildProperty);
+		}
+
+		public IPropertyDependency AndOnCollectionChildProperty<TCollectionType, TCollectionItemPropertyType>(ObservableCollection<TCollectionType> collection, Expression<Func<TCollectionType, TCollectionItemPropertyType>> collectionChildProperty) where TCollectionType : INotifyPropertyChanged
+		{
+			return OnCollectionChildProperty(collection, collectionChildProperty);
+		}
+
+		public IPropertyDependency OnCollectionChildProperty<TCollectionType, TCollectionItemPropertyType>(INotifyCollectionChanged collection, Expression<Func<TCollectionType, TCollectionItemPropertyType>> collectionChildProperty) where TCollectionType : INotifyPropertyChanged
+		{
 			var masterPropertyName = PropertyNameResolver.GetPropertyName(collectionChildProperty);
-			_propertyRegistration.RegisterPropertyDependency((INotifyCollectionChanged)collection, masterPropertyName, _propertyName);
+			_propertyRegistration.RegisterPropertyDependency(collection, masterPropertyName, _propertyName);
 
 			return this;
 		}
 
-		public IPropertyDependency AndOnCollectionChildProperty<TCollectionType, TCollectionItemPropertyType>(DependencyFrameworkObservableCollection<TCollectionType> collection, Expression<Func<TCollectionType, TCollectionItemPropertyType>> collectionChildProperty) where TCollectionType : INotifyPropertyChanged
+		public IPropertyDependency AndOnCollectionChildProperty<TCollectionType, TCollectionItemPropertyType>(INotifyCollectionChanged collection, Expression<Func<TCollectionType, TCollectionItemPropertyType>> collectionChildProperty) where TCollectionType : INotifyPropertyChanged
 		{
 			return OnCollectionChildProperty(collection, collectionChildProperty);
 		}

@@ -150,6 +150,20 @@ namespace PropertyDependencyFramework
 			HiddenRegistrationAPI.RegisterPropertyDependency(masterPropertyOwnerCollection, masterProperty, dependentProperty);
 		}
 
+		protected void RegisterPropertyDependency<T, T1, T2>(ObservableCollection<T> masterPropertyOwnerCollection,
+													 Expression<Func<T, T1>> masterProperty,
+													 Expression<Func<T2>> dependentProperty) where T : INotifyPropertyChanged
+		{
+			HiddenRegistrationAPI.RegisterPropertyDependency((INotifyCollectionChanged)masterPropertyOwnerCollection, masterProperty, dependentProperty);
+		}
+
+		protected void RegisterPropertyDependency<T, T1, T2>(INotifyCollectionChanged masterPropertyOwnerCollection,
+													 Expression<Func<T, T1>> masterProperty,
+													 Expression<Func<T2>> dependentProperty) where T : INotifyPropertyChanged
+		{
+			HiddenRegistrationAPI.RegisterPropertyDependency(masterPropertyOwnerCollection, masterProperty, dependentProperty);
+		}
+
 
 		protected void RegisterCallbackDependency<T>(T masterPropertyOwner, Action callback)
 			where T : INotifyPropertyChanged
@@ -174,8 +188,30 @@ namespace PropertyDependencyFramework
 			HiddenRegistrationAPI.RegisterCallbackDependency(masterPropertyOwnerCollection, callback);
 		}
 
+		protected void RegisterCallbackDependency<T>(ObservableCollection<T> masterPropertyOwnerCollection, Action callback)
+		{
+			HiddenRegistrationAPI.RegisterCallbackDependency((INotifyCollectionChanged)masterPropertyOwnerCollection, callback);
+		}
+
+		protected void RegisterCallbackDependency(INotifyCollectionChanged masterPropertyOwnerCollection, Action callback)
+		{
+			HiddenRegistrationAPI.RegisterCallbackDependency(masterPropertyOwnerCollection, callback);
+		}
+
 		protected void RegisterCallbackDependency<T, T1>(DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty, Action callback)
 				where T : INotifyPropertyChanged
+		{
+			HiddenRegistrationAPI.RegisterCallbackDependency(masterPropertyOwnerCollection, masterProperty, callback);
+		}
+
+		protected void RegisterCallbackDependency<T, T1>(ObservableCollection<T> masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty, Action callback)
+		where T : INotifyPropertyChanged
+		{
+			HiddenRegistrationAPI.RegisterCallbackDependency(masterPropertyOwnerCollection, masterProperty, callback);
+		}
+
+		protected void RegisterCallbackDependency<T, T1>(INotifyCollectionChanged masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty, Action callback)
+		where T : INotifyPropertyChanged
 		{
 			HiddenRegistrationAPI.RegisterCallbackDependency(masterPropertyOwnerCollection, masterProperty, callback);
 		}
