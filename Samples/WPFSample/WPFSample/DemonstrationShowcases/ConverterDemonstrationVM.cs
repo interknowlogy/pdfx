@@ -47,22 +47,22 @@ namespace WPFSample.DemonstrationShowcases
 				Property(() => MoneyQuantification)
 					.Depends(p => p.On(() => MoneyInUSD));
 
-				if (MoneyInUSD < 0)
-				{
-					return "Poor";
-				}
+			if (MoneyInUSD < 0)
+			{
+				return "Not too much";
+			}
 
-				if (MoneyInUSD < 1000)
-				{
-					return "Lower class";
-				}
+			if (MoneyInUSD < 1000)
+			{
+				return "A Little";
+			}
 
-				if (MoneyInUSD < 10000)
-				{
-					return "Middle class";
-				}
+			if (MoneyInUSD < 10000)
+			{
+				return "Quite some";
+			}
 
-				return "Upper class";
+			return "A Lot";
 			}
 		}
 

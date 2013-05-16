@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 using PropertyDependencyFramework.Annotations;
+using PropertyDependencyFramework.Interfaces;
 
 namespace PropertyDependencyFramework
 {
@@ -19,9 +20,10 @@ namespace PropertyDependencyFramework
 									 IDependencyFrameworkNotifyPropertyChangedInTransaction, 
 								     IDisposable,
 									 IBindableHiddenRegistrationAPI,
-									 IBindableHiddenBaseAPI
+									 IBindableHiddenBaseAPI,
+									 IBindableBaseAccessToProtectedFunctionality
 	{
-		protected const bool ArePropertyDependencySanityChecksEnabled = false;
+		public bool ArePropertyDependencySanityChecksEnabled = true;
 
 		protected BindableBase()
 		{
@@ -280,7 +282,10 @@ namespace PropertyDependencyFramework
 				return;
 
 #if DEBUG
-			EnsureObjectExposesProperty(this, dependantPropertyName);
+			if (ArePropertyDependencySanityChecksEnabled)
+			{
+				EnsureObjectExposesProperty(this, dependantPropertyName);
+			}
 #endif
 
 			_propertyDependencies[masterPropertyOwner].PropertyDependencies[masterPropertyName].DependentProperties.Add(dependantPropertyName);
@@ -475,7 +480,10 @@ namespace PropertyDependencyFramework
 			if (!_propertyDependencies[masterPropertyOwner].PropertyDependencies.ContainsKey(masterPropertyName))
 			{
 #if DEBUG
-				EnsureObjectExposesProperty(masterPropertyOwner, masterPropertyName);
+				if (ArePropertyDependencySanityChecksEnabled)
+				{
+					EnsureObjectExposesProperty(masterPropertyOwner, masterPropertyName);
+				}
 #endif
 				_propertyDependencies[masterPropertyOwner].PropertyDependencies.Add(masterPropertyName, new PropertyDependencies());
 			}
@@ -497,23 +505,28 @@ namespace PropertyDependencyFramework
 
 		protected void NotifyPropertyChanged<T>(Expression<Func<T>> propertyExpression)
 		{
+			NotifyPropertyChanged(PropertyNameResolver.GetPropertyName(propertyExpression));
+		}
+
+		protected void NotifyPropertyChanged(string propertyName)
+		{
 			if (UseSmartPropertyChangeNotificationByDefault)
 			{
 				if (DependencyFrameworkNotifyPropertyChangedScope.AreSourcePropertyChangesQueuedForDeferredExecution)
 				{
-					DependencyFrameworkNotifyPropertyChangedScope.Current.DeferSourcePropertyChangeForDeferredExecution(this, PropertyNameResolver.GetPropertyName(propertyExpression));
+					DependencyFrameworkNotifyPropertyChangedScope.Current.DeferSourcePropertyChangeForDeferredExecution(this, propertyName);
 				}
 				else
 				{
 					using (new DependencyFrameworkNotifyPropertyChangedScope())
 					{
-						OnPropertyChanged(PropertyNameResolver.GetPropertyName(propertyExpression));
+						OnPropertyChanged(propertyName);
 					}
 				}
 			}
 			else
 			{
-				OnPropertyChanged(PropertyNameResolver.GetPropertyName(propertyExpression));
+				OnPropertyChanged(propertyName);
 			}
 		}
 
@@ -690,6 +703,90 @@ namespace PropertyDependencyFramework
 		{
 			OnPropertyChanged(propertyName);
 		}
+		#endregion
+
+		#region IBindableBaseAccessToProtectedFunctionality
+
+		Delegate[] IBindableBaseAccessToProtectedFunctionality.TunnelledGetPropertyChangedInTransactionInvocationList()
+		{
+			return GetPropertyChangedInTransactionInvocationList();
+		}
+
+		Delegate[] IBindableBaseAccessToProtectedFunctionality.TunnelledGetPropertyChangedInvocationList()
+		{
+			return GetPropertyChangedInvocationList();
+		}
+
+		void IBindableBaseAccessToProtectedFunctionality.TunnelledNotifyPropertyChanged(string propertyName)
+		{
+			NotifyPropertyChanged(propertyName);
+		}
+
+		T IBindableBaseAccessToProtectedFunctionality.TunnelledCachedValue<T>(Expression<Func<T>> ofProperty,
+		                                                                      Func<T> propertyEvaluation)
+		{
+			return CachedValue(ofProperty, propertyEvaluation);
+		}
+
+		void IBindableBaseAccessToProtectedFunctionality.TunnelledRegisterPropertyDependency<T, T1, T2>(T masterPropertyOwner, Expression<Func<T, T1>> masterProperty,
+		                                                                                            Expression<Func<T2>> dependentProperty)
+		{
+			RegisterPropertyDependency(masterPropertyOwner, masterProperty, dependentProperty);
+		}
+
+		void IBindableBaseAccessToProtectedFunctionality.TunnelledRegisterPropertyDependency<T, T1, T2>(
+			DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty,
+			Expression<Func<T2>> dependentProperty)
+		{
+			RegisterPropertyDependency(masterPropertyOwnerCollection,
+			                           masterProperty,
+			                           dependentProperty);
+		}
+
+		void IBindableBaseAccessToProtectedFunctionality.TunnelledRegisterCallbackDependency<T>(T masterPropertyOwner, Action callback)
+		{
+			RegisterCallbackDependency(masterPropertyOwner, callback);
+		}
+
+		void IBindableBaseAccessToProtectedFunctionality.TunnelledRegisterCallbackDependency<T, T1>(T masterPropertyOwner, Expression<Func<T, T1>> masterProperty, Action callback)
+		{
+			RegisterCallbackDependency(masterPropertyOwner, masterProperty, callback);
+		}
+
+		void IBindableBaseAccessToProtectedFunctionality.TunnelledRegisterCallbackDependency<T, T1>(T[] masterPropertyOwners, Expression<Func<T, T1>> masterProperty, Action callback)
+		{
+			RegisterCallbackDependency(masterPropertyOwners, masterProperty, callback);
+		}
+
+		void IBindableBaseAccessToProtectedFunctionality.TunnelledRegisterCallbackDependency<T>(DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection,
+		                                                                                    Action callback)
+		{
+			RegisterCallbackDependency(masterPropertyOwnerCollection, callback);
+		}
+
+		void IBindableBaseAccessToProtectedFunctionality.TunnelledRegisterCallbackDependency<T, T1>(DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection,
+		                                                                                        Expression<Func<T, T1>> masterProperty, Action callback)
+		{
+			RegisterCallbackDependency(masterPropertyOwnerCollection, masterProperty, callback);
+		}
+
+		void IBindableBaseAccessToProtectedFunctionality.TunnelledUnregisterAllPropertyDependencies()
+		{
+			UnregisterAllPropertyDependencies();
+		}
+
+		void IBindableBaseAccessToProtectedFunctionality.TunnelledUnRegisterPropertyDependency(INotifyCollectionChanged masterPropertyOwnerCollection,
+		                                                                                   string masterPropertyName, string dependantPropertyName)
+		{
+			UnRegisterPropertyDependency(masterPropertyOwnerCollection, masterPropertyName, dependantPropertyName);
+		}
+
+		void IBindableBaseAccessToProtectedFunctionality.TunnelledUnRegisterPropertyDependency(INotifyPropertyChanged masterPropertyOwner, string masterPropertyName,
+		                                                                                   string dependantPropertyName)
+		{
+			UnRegisterPropertyDependency(masterPropertyOwner, masterPropertyName, dependantPropertyName);
+		}
+
 		#endregion
 	}
 }

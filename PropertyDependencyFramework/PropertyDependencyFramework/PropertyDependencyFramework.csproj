@@ -38,6 +38,8 @@
   <ItemGroup>
     <Compile Include="Bindable.cs" />
     <Compile Include="BindableBase.cs" />
+    <Compile Include="Interfaces\IBindableBaseAccessToProtectedFunctionality.cs" />
+    <Compile Include="Interfaces\IBindableAccessToProtectedFunctionality.cs" />
     <Compile Include="Interfaces\IBindableExtensionHook.cs" />
     <Compile Include="Interfaces\IBindableHiddenBaseAPI.cs" />
     <Compile Include="Interfaces\IBindableHiddenRegistrationAPI.cs" />

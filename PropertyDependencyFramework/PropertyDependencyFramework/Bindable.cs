@@ -5,10 +5,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using PropertyDependencyFramework.Interfaces;
 
 namespace PropertyDependencyFramework
 {
-	public abstract class Bindable : BindableBase
+	public abstract class Bindable : BindableBase, IBindableAccessToProtectedFunctionality
 	{
 		protected Bindable()
 		{
@@ -22,7 +23,7 @@ namespace PropertyDependencyFramework
 		#region Declarative Property Dependency Registration API
 		internal Dictionary<string, DependentPropertyImplementation> _properties = new Dictionary<string, DependentPropertyImplementation>();
 
-		public IDependentProperty Property<T>(Expression<Func<T>> property)
+		protected IDependentProperty Property<T>(Expression<Func<T>> property)
 		{
 			string dependantPropertyName = PropertyNameResolver.GetPropertyName(property);
 
@@ -32,6 +33,13 @@ namespace PropertyDependencyFramework
 			}
 
 			return _properties[dependantPropertyName];
+		}
+		#endregion
+
+		#region IBindableAccessToProtectedFunctionality
+		IDependentProperty IBindableAccessToProtectedFunctionality.TunnelledProperty<T>(Expression<Func<T>> property)
+		{
+			return Property(property);
 		}
 		#endregion
 	}

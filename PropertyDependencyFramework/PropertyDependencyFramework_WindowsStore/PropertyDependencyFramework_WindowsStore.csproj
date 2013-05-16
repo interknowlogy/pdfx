@@ -118,6 +118,9 @@
     <Compile Include="..\PropertyDependencyFramework_WPF\DeclarativeAPI\IPropertyDependencyExt.cs">
       <Link>DeclarativeAPI\IPropertyDependencyExt.cs</Link>
     </Compile>
+    <Compile Include="..\PropertyDependencyFramework_WPF\Interfaces\IBindableExtAccessToProtectedFunctionality.cs">
+      <Link>Interfaces\IBindableExtAccessToProtectedFunctionality.cs</Link>
+    </Compile>
     <Compile Include="..\PropertyDependencyFramework_WPF\Interfaces\IBindableHiddenRegistrationAPIExt.cs">
       <Link>Interfaces\IBindableHiddenRegistrationAPIExt.cs</Link>
     </Compile>

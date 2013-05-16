@@ -9,7 +9,7 @@ using PropertyDependencyFramework.Interfaces;
 
 namespace PropertyDependencyFramework
 {
-	public class BindableExt : BindableBase, IBindableHiddenRegistrationAPIExt, IBindableExtensionHook
+	public class BindableExt : BindableBase, IBindableHiddenRegistrationAPIExt, IBindableExtensionHook, IBindableExtAccessToProtectedFunctionality
 	{
 		private const int PropertyDeferredDependencyDelayInMilliseconds = 100;
 
@@ -246,7 +246,7 @@ namespace PropertyDependencyFramework
 
 		#region Declarative Property Dependency Registration API
 		internal Dictionary<string, DependentPropertyImplementationExt> _properties = new Dictionary<string, DependentPropertyImplementationExt>();
-		public IDependentPropertyExt Property<T>(Expression<Func<T>> property)
+		protected IDependentPropertyExt Property<T>(Expression<Func<T>> property)
 		{
 			string dependantPropertyName = PropertyNameResolver.GetPropertyName(property);
 
@@ -368,6 +368,82 @@ namespace PropertyDependencyFramework
 		{
 			get { return this; }
 		}
+		#endregion
+
+		#region IBindableExtAccessToProtectedFunctionality
+
+		IDependentPropertyExt IBindableExtAccessToProtectedFunctionality.TunnelledProperty<T>(Expression<Func<T>> property)
+		{
+			return Property(property);
+		}
+
+		void IBindableExtAccessToProtectedFunctionality.TunnelledRegisterPropertyDependency<TOwner, TProperty, TDependantPropertyType>(Expression<Func<TOwner>> ownerProvider,
+		                                                                                                                               Expression<Func<TOwner, TProperty>> property,
+		                                                                                                                               Expression<Func<TDependantPropertyType>> dependantProperty)
+		{
+			RegisterPropertyDependency<TOwner, TProperty, TDependantPropertyType>(ownerProvider,
+			                                                                      property,
+			                                                                      dependantProperty);
+		}
+
+		void IBindableExtAccessToProtectedFunctionality.TunnelledRegisterPropertyDependency<TCollectionType, TCollectionItemPropertyType, TProperty>(
+			Expression<Func<DependencyFrameworkObservableCollection<TCollectionType>>> collectionPropertyGetter, Expression<Func<TCollectionType, TCollectionItemPropertyType>> collectionChildProperty, Expression<Func<TProperty>> dependentProperty)
+		{
+			RegisterPropertyDependency<TCollectionType, TCollectionItemPropertyType, TProperty>(
+				collectionPropertyGetter,
+				collectionChildProperty,
+				dependentProperty);
+		}
+
+		void IBindableExtAccessToProtectedFunctionality.TunnelledRegisterDeferredCallbackDependency<T, T1>(T masterPropertyOwner, Expression<Func<T, T1>> masterProperty,
+		                                                                                                   Action callback)
+		{
+			RegisterDeferredCallbackDependency<T, T1>(masterPropertyOwner, masterProperty, callback);
+		}
+
+		void IBindableExtAccessToProtectedFunctionality.TunnelledRegisterDeferredCallbackDependency<T, T1>(T[] masterPropertyOwners, Expression<Func<T, T1>> masterProperty,
+		                                                                                                   Action callback)
+		{
+			RegisterDeferredCallbackDependency<T, T1>(masterPropertyOwners, masterProperty, callback);
+			;
+		}
+
+		void IBindableExtAccessToProtectedFunctionality.TunnelledRegisterDeferredCallbackDependency<T, T1>(T masterPropertyOwner, Expression<Func<T, T1>> masterProperty,
+		                                                                                                   Action callback, int delayInMilliseconds)
+		{
+			RegisterDeferredCallbackDependency<T, T1>(masterPropertyOwner, masterProperty, callback, delayInMilliseconds);
+			;
+		}
+
+		void IBindableExtAccessToProtectedFunctionality.TunnelledRegisterDeferredCallbackDependency<T>(T masterPropertyOwner, Action callback)
+		{
+			RegisterDeferredCallbackDependency<T>(masterPropertyOwner, callback);
+		}
+
+		void IBindableExtAccessToProtectedFunctionality.TunnelledRegisterDeferredCallbackDependency<T>(T[] masterPropertyOwners, Action callback)
+		{
+			RegisterDeferredCallbackDependency<T>(masterPropertyOwners, callback);
+		}
+
+		void IBindableExtAccessToProtectedFunctionality.TunnelledRegisterDeferredCallbackDependency<T>(T masterPropertyOwner, Action callback, int delayInMilliseconds)
+		{
+			RegisterDeferredCallbackDependency<T>(masterPropertyOwner, callback, delayInMilliseconds);
+		}
+
+		void IBindableExtAccessToProtectedFunctionality.TunnelledRegisterDeferredCallbackDependency<T>(
+			DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection, Action callback)
+		{
+			RegisterDeferredCallbackDependency<T>(
+			masterPropertyOwnerCollection, callback);
+		}
+
+		void IBindableExtAccessToProtectedFunctionality.TunnelledRegisterDeferredCallbackDependency<T, T1>(
+			DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty, Action callback)
+		{
+			RegisterDeferredCallbackDependency<T, T1>(
+				masterPropertyOwnerCollection, masterProperty, callback);
+		}
+
 		#endregion
 	}
 }
