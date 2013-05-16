@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq.Expressions;
@@ -87,8 +88,30 @@ namespace PropertyDependencyFramework
 			HiddenRegistrationAPI.RegisterDeferredCallbackDependency(masterPropertyOwnerCollection, callback);
 		}
 
+		protected void RegisterDeferredCallbackDependency<T>(ObservableCollection<T> masterPropertyOwnerCollection, Action callback)
+		{
+			HiddenRegistrationAPI.RegisterDeferredCallbackDependency((INotifyCollectionChanged)masterPropertyOwnerCollection, callback);
+		}
+
+		protected void RegisterDeferredCallbackDependency(INotifyCollectionChanged masterPropertyOwnerCollection, Action callback)
+		{
+			HiddenRegistrationAPI.RegisterDeferredCallbackDependency(masterPropertyOwnerCollection, callback);
+		}
+
 		protected void RegisterDeferredCallbackDependency<T, T1>(DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty, Action callback)				
 							where T : INotifyPropertyChanged
+		{
+			HiddenRegistrationAPI.RegisterDeferredCallbackDependency(masterPropertyOwnerCollection, masterProperty, callback);
+		}
+
+		protected void RegisterDeferredCallbackDependency<T, T1>(ObservableCollection<T> masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty, Action callback)
+					where T : INotifyPropertyChanged
+		{
+			HiddenRegistrationAPI.RegisterDeferredCallbackDependency((INotifyCollectionChanged)masterPropertyOwnerCollection, masterProperty, callback);
+		}
+
+		protected void RegisterDeferredCallbackDependency<T, T1>(INotifyCollectionChanged masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty, Action callback)
+			where T : INotifyPropertyChanged
 		{
 			HiddenRegistrationAPI.RegisterDeferredCallbackDependency(masterPropertyOwnerCollection, masterProperty, callback);
 		}
@@ -223,7 +246,12 @@ namespace PropertyDependencyFramework
 
 		void IBindableHiddenRegistrationAPIExt.RegisterDeferredCallbackDependency<T>(DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection, Action callback)
 		{
-			HiddenRegistrationAPI.RegisterDeferredCallbackDependency((INotifyCollectionChanged)masterPropertyOwnerCollection, callback, PropertyDeferredDependencyDelayInMilliseconds);
+			HiddenRegistrationAPI.RegisterDeferredCallbackDependency((INotifyCollectionChanged)masterPropertyOwnerCollection, callback);
+		}
+
+		void IBindableHiddenRegistrationAPIExt.RegisterDeferredCallbackDependency(INotifyCollectionChanged masterPropertyOwnerCollection, Action callback)
+		{
+			HiddenRegistrationAPI.RegisterDeferredCallbackDependency(masterPropertyOwnerCollection, callback, PropertyDeferredDependencyDelayInMilliseconds);
 		}
 
 		void IBindableHiddenRegistrationAPIExt.RegisterDeferredCallbackDependency<T, T1>(DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty,

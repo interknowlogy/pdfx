@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq.Expressions;
 
@@ -35,6 +36,26 @@ where TOwner : INotifyPropertyChanged;
 			where TCollectionType : INotifyPropertyChanged;
 
 
+		IPropertyDependencyExt OnCollectionChildProperty<TCollectionType, TCollectionItemPropertyType>(
+	ObservableCollection<TCollectionType> collection,
+	Expression<Func<TCollectionType, TCollectionItemPropertyType>> collectionChildProperty)
+	where TCollectionType : INotifyPropertyChanged;
+
+		IPropertyDependencyExt AndOnCollectionChildProperty<TCollectionType, TCollectionItemPropertyType>(
+			ObservableCollection<TCollectionType> collection,
+			Expression<Func<TCollectionType, TCollectionItemPropertyType>> collectionChildProperty)
+			where TCollectionType : INotifyPropertyChanged;
+
+		IPropertyDependencyExt OnCollectionChildProperty<TCollectionType, TCollectionItemPropertyType>(
+	INotifyCollectionChanged collection,
+	Expression<Func<TCollectionType, TCollectionItemPropertyType>> collectionChildProperty)
+	where TCollectionType : INotifyPropertyChanged;
+
+		IPropertyDependencyExt AndOnCollectionChildProperty<TCollectionType, TCollectionItemPropertyType>(
+			INotifyCollectionChanged collection,
+			Expression<Func<TCollectionType, TCollectionItemPropertyType>> collectionChildProperty)
+			where TCollectionType : INotifyPropertyChanged;
+
 
 		IPropertyDependencyExt On<TOwner, TProperty>(Expression<Func<TOwner>> ownerProvider, Expression<Func<TOwner, TProperty>> property)
 			where TOwner : INotifyPropertyChanged;
@@ -49,6 +70,25 @@ where TOwner : INotifyPropertyChanged;
 
 		IPropertyDependencyExt AndOnCollectionChildProperty<TCollectionType, TCollectionItemPropertyType>(
 			Expression<Func<ObservableCollection<TCollectionType>>> collectionPropertyGetter,
+			Expression<Func<TCollectionType, TCollectionItemPropertyType>> collectionChildProperty) where TCollectionType : INotifyPropertyChanged;
+
+		IPropertyDependencyExt OnCollectionChildProperty<TCollectionType, TCollectionItemPropertyType>(
+	Expression<Func<DependencyFrameworkObservableCollection<TCollectionType>>> collectionPropertyGetter,
+	Expression<Func<TCollectionType, TCollectionItemPropertyType>> collectionChildProperty) where TCollectionType : INotifyPropertyChanged;
+
+
+		IPropertyDependencyExt AndOnCollectionChildProperty<TCollectionType, TCollectionItemPropertyType>(
+			Expression<Func<DependencyFrameworkObservableCollection<TCollectionType>>> collectionPropertyGetter,
+			Expression<Func<TCollectionType, TCollectionItemPropertyType>> collectionChildProperty) where TCollectionType : INotifyPropertyChanged;
+
+
+		IPropertyDependencyExt OnCollectionChildProperty<TCollectionType, TCollectionItemPropertyType>(
+	Expression<Func<INotifyCollectionChanged>> collectionPropertyGetter,
+	Expression<Func<TCollectionType, TCollectionItemPropertyType>> collectionChildProperty) where TCollectionType : INotifyPropertyChanged;
+
+
+		IPropertyDependencyExt AndOnCollectionChildProperty<TCollectionType, TCollectionItemPropertyType>(
+			Expression<Func<INotifyCollectionChanged>> collectionPropertyGetter,
 			Expression<Func<TCollectionType, TCollectionItemPropertyType>> collectionChildProperty) where TCollectionType : INotifyPropertyChanged;
 	}
 }

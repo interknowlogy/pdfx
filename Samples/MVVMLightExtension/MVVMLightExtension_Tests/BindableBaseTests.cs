@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -489,8 +490,8 @@ namespace MVVMLightExtension_Tests
 		[TestMethod]
 		public void DirectDependencyOnCollectionsChildProperty_CollectionChildIsModifiedAddedAndRemoved_TargetPropertyIsUpdated()
 		{
-			DirectDependencyOnCollectionsChildProperty_CollectionChildIsModifiedAddedAndRemoved_TargetPropertyIsUpdated_Impl(false);
 			DirectDependencyOnCollectionsChildProperty_CollectionChildIsModifiedAddedAndRemoved_TargetPropertyIsUpdated_Impl(true);
+			DirectDependencyOnCollectionsChildProperty_CollectionChildIsModifiedAddedAndRemoved_TargetPropertyIsUpdated_Impl(false);
 		}
 
 		private static void DirectDependencyOnCollectionsChildProperty_CollectionChildIsModifiedAddedAndRemoved_TargetPropertyIsUpdated_Impl(bool useSmartNotification)
@@ -511,6 +512,92 @@ namespace MVVMLightExtension_Tests
 
 			testClass.Children.Add(
 								   new DirectDependencyOnCollectionsChildProperty_CollectionChildIsModifiedAddedAndRemoved_TargetPropertyIsUpdated_CollectionChildClass()
+								   {
+									   Source = 10
+								   });
+
+			Assert.AreEqual(2, recorder.NumberOfChanges);
+			Assert.AreEqual(11m, recorder.NewValues.Last());
+
+			testClass.Children[0].Source = 5;
+			testClass.Children[1].Source = 100;
+
+			Assert.AreEqual(4, recorder.NumberOfChanges);
+			Assert.AreEqual(105m, recorder.NewValues.Last());
+
+			testClass.Children.Remove(testClass.Children.Last());
+
+			Assert.AreEqual(5, recorder.NumberOfChanges);
+			Assert.AreEqual(5m, recorder.NewValues.Last());
+		}
+		#endregion
+
+		#region DirectDependencyOnObservableCollectionsChildProperty_CollectionChildIsModifiedAddedAndRemoved_TargetPropertyIsUpdated
+		class DirectDependencyOnObservableCollectionsChildProperty_CollectionChildIsModifiedAddedAndRemoved_TargetPropertyIsUpdated_TestClass : BindableForUnitTests
+		{
+			public DirectDependencyOnObservableCollectionsChildProperty_CollectionChildIsModifiedAddedAndRemoved_TargetPropertyIsUpdated_TestClass(bool useSmartPropertyChangeNotificationByDefault)
+				: base(useSmartPropertyChangeNotificationByDefault)
+			{
+				Children = new ObservableCollection<DirectDependencyOnObservableCollectionsChildProperty_CollectionChildIsModifiedAddedAndRemoved_TargetPropertyIsUpdated_CollectionChildClass>();
+			}
+
+			public decimal SumOfChildren
+			{
+				get
+				{
+					Property(() => SumOfChildren)
+						.Depends(p => p.OnCollectionChildProperty(Children, k => k.Source));
+
+					return Children.Select(k => k.Source).SumOrZero();
+				}
+			}
+
+			public ObservableCollection<DirectDependencyOnObservableCollectionsChildProperty_CollectionChildIsModifiedAddedAndRemoved_TargetPropertyIsUpdated_CollectionChildClass> Children { get; private set; }
+		}
+
+		class DirectDependencyOnObservableCollectionsChildProperty_CollectionChildIsModifiedAddedAndRemoved_TargetPropertyIsUpdated_CollectionChildClass : BindableForUnitTests
+		{
+			private decimal _source;
+			public decimal Source
+			{
+				[DebuggerStepThrough]
+				get { return _source; }
+				set
+				{
+					if (value == _source)
+						return;
+
+					_source = value;
+					NotifyPropertyChanged(() => Source);
+				}
+			}
+		}
+
+		[TestMethod]
+		public void DirectDependencyOnObservableCollectionsChildProperty_CollectionChildIsModifiedAddedAndRemoved_TargetPropertyIsUpdated()
+		{
+			DirectDependencyOnObservableCollectionsChildProperty_CollectionChildIsModifiedAddedAndRemoved_TargetPropertyIsUpdated_Impl(true);
+			DirectDependencyOnObservableCollectionsChildProperty_CollectionChildIsModifiedAddedAndRemoved_TargetPropertyIsUpdated_Impl(false);
+		}
+
+		private static void DirectDependencyOnObservableCollectionsChildProperty_CollectionChildIsModifiedAddedAndRemoved_TargetPropertyIsUpdated_Impl(bool useSmartNotification)
+		{
+			var testClass = new DirectDependencyOnObservableCollectionsChildProperty_CollectionChildIsModifiedAddedAndRemoved_TargetPropertyIsUpdated_TestClass(useSmartNotification);
+
+			var recorder = CreatePropertyChangeRecorder(testClass, k => k.SumOfChildren);
+
+			testClass.Children.Add(
+								   new DirectDependencyOnObservableCollectionsChildProperty_CollectionChildIsModifiedAddedAndRemoved_TargetPropertyIsUpdated_CollectionChildClass()
+								   {
+									   Source = 1
+								   });
+
+			Assert.IsTrue(recorder.HasChanged);
+			Assert.AreEqual(1, recorder.NumberOfChanges);
+			Assert.AreEqual(1m, recorder.NewValues.Last());
+
+			testClass.Children.Add(
+								   new DirectDependencyOnObservableCollectionsChildProperty_CollectionChildIsModifiedAddedAndRemoved_TargetPropertyIsUpdated_CollectionChildClass()
 								   {
 									   Source = 10
 								   });
@@ -619,6 +706,94 @@ namespace MVVMLightExtension_Tests
 
 		#endregion
 
+		#region DirectDependencyOnObservableCollectionsChildProperty_ChildIsRemoved_NoReferencesAreKeptOnChild
+
+		class DirectDependencyOnObservableCollectionsChildProperty_ChildIsRemoved_NoReferencesAreKeptOnChild_TestClass : BindableForUnitTests
+		{
+			public DirectDependencyOnObservableCollectionsChildProperty_ChildIsRemoved_NoReferencesAreKeptOnChild_TestClass(bool useSmartPropertyChangeNotificationByDefault)
+				: base(useSmartPropertyChangeNotificationByDefault)
+			{
+				Children = new ObservableCollection<Dependency>();
+			}
+
+			public ObservableCollection<Dependency> Children { get; private set; }
+
+			public class Dependency : BindableForUnitTests
+			{
+				private decimal _source;
+				public decimal Source
+				{
+					[DebuggerStepThrough]
+					get { return _source; }
+					set
+					{
+						if (value == _source)
+							return;
+
+						_source = value;
+						NotifyPropertyChanged(() => Source);
+					}
+				}
+			}
+
+			public decimal Target
+			{
+				get
+				{
+					Property(() => Target)
+						.Depends(p => p.OnCollectionChildProperty(Children, k => k.Source));
+
+					return Children.Select(k => k.Source).SumOrZero();
+				}
+			}
+		}
+
+		[TestMethod]
+		public void DirectDependencyOnObservableCollectionsChildProperty_ChildIsRemoved_NoReferencesAreKeptOnChild()
+		{
+			DirectDependencyOnObservableCollectionsChildProperty_ChildIsRemoved_NoReferencesAreKeptOnChild_Impl(true);
+			DirectDependencyOnObservableCollectionsChildProperty_ChildIsRemoved_NoReferencesAreKeptOnChild_Impl(false);
+		}
+
+		private static void DirectDependencyOnObservableCollectionsChildProperty_ChildIsRemoved_NoReferencesAreKeptOnChild_Impl(bool useSmartNotification)
+		{
+			var tu = new DirectDependencyOnObservableCollectionsChildProperty_ChildIsRemoved_NoReferencesAreKeptOnChild_TestClass(useSmartNotification);
+
+			var recorder = CreatePropertyChangeRecorder(tu, k => k.Target);
+			tu.Children.Add(new DirectDependencyOnObservableCollectionsChildProperty_ChildIsRemoved_NoReferencesAreKeptOnChild_TestClass.Dependency()
+			{
+				Source = 1
+			});
+			tu.Children.Add(new DirectDependencyOnObservableCollectionsChildProperty_ChildIsRemoved_NoReferencesAreKeptOnChild_TestClass.Dependency()
+			{
+				Source = 2
+			});
+
+			var child1 = tu.Children[0];
+			var child2 = tu.Children[1];
+
+			Assert.IsTrue(recorder.HasChanged);
+			Assert.AreEqual(3m, recorder.NewValues.Last());
+			Assert.IsTrue(child1.AreEventHandlersRegisteredOnPropertyChanged);
+			Assert.IsTrue(child1.AreEventHandlersRegisteredOnPropertyChangedInTransaction);
+			Assert.IsTrue(child2.AreEventHandlersRegisteredOnPropertyChanged);
+			Assert.IsTrue(child2.AreEventHandlersRegisteredOnPropertyChangedInTransaction);
+
+			tu.Children.Remove(child2);
+			Assert.IsTrue(child1.AreEventHandlersRegisteredOnPropertyChanged);
+			Assert.IsTrue(child1.AreEventHandlersRegisteredOnPropertyChangedInTransaction);
+			Assert.IsFalse(child2.AreEventHandlersRegisteredOnPropertyChanged);
+			Assert.IsFalse(child2.AreEventHandlersRegisteredOnPropertyChangedInTransaction);
+
+			tu.Children.Remove(child1);
+			Assert.IsFalse(child1.AreEventHandlersRegisteredOnPropertyChanged);
+			Assert.IsFalse(child1.AreEventHandlersRegisteredOnPropertyChangedInTransaction);
+			Assert.IsFalse(child2.AreEventHandlersRegisteredOnPropertyChanged);
+			Assert.IsFalse(child2.AreEventHandlersRegisteredOnPropertyChangedInTransaction);
+		}
+
+		#endregion
+
 		#region CallbackRegisteredOnDirectDependency_DependencyChanges_CallbackIsFiredOnce
 		public class CallbackRegisteredOnDirectDependency_DependencyChanges_CallbackIsFiredOnce_TestClass : BindableForUnitTests
 		{
@@ -628,7 +803,7 @@ namespace MVVMLightExtension_Tests
 				Children = new DependencyFrameworkObservableCollection<CollectionChildClass>();
 
 				RegisterCallbackDependency(this, k => k.Target, () => { NumberOfCallbackCallsAfterTargetPropertyChanged++; });
-				RegisterCallbackDependency<CollectionChildClass, string>(Children, k => k.Source, () => { NumberOfCallbackCallsAfterChildPropertyChanged++; });
+				RegisterCallbackDependency(Children, k => k.Source, () => { NumberOfCallbackCallsAfterChildPropertyChanged++; });
 				RegisterCallbackDependency(Children, () => { NumberOfCallbackCallsAfterNumberOfChildrenChanged++; });
 			}
 

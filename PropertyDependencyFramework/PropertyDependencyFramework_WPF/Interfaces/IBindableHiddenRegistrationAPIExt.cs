@@ -36,6 +36,8 @@ namespace PropertyDependencyFramework.Interfaces
 		
 		void RegisterDeferredCallbackDependency<T>(DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection, Action callback);
 
+		void RegisterDeferredCallbackDependency(INotifyCollectionChanged masterPropertyOwnerCollection, Action callback);
+
 		void RegisterDeferredCallbackDependency<T, T1>(DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty, Action callback) where T : INotifyPropertyChanged;
 	}
 }

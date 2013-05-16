@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -331,6 +332,144 @@ namespace PropertyDependencyFramework_Tests
 			Assert.AreEqual(110m, recorder.NewValues[5]);
 
 			collection2.Add(new DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency(useSmartNotification)
+			{
+				Source = 100
+			});
+			Assert.AreEqual(7, recorder.NumberOfChanges);
+			Assert.AreEqual(210m, recorder.NewValues[6]);
+
+			collection2[0].Source = 5;
+			collection2[2].Source = 200;
+			Assert.AreEqual(9, recorder.NumberOfChanges);
+			Assert.AreEqual(305m, recorder.NewValues[8]);
+
+			collection2.Remove(collection2[0]);
+			Assert.AreEqual(10, recorder.NumberOfChanges);
+			Assert.AreEqual(300m, recorder.NewValues[9]);
+		}
+		#endregion
+
+		#region DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire
+		class DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass : BindableForUnitTests
+		{
+			internal class ChildDependency : BindableForUnitTests
+			{
+				public ChildDependency(bool useSmartPropertyChangeNotificationByDefault)
+					: base(useSmartPropertyChangeNotificationByDefault)
+				{
+				}
+
+				private decimal _source;
+				public decimal Source
+				{
+					[DebuggerStepThrough]
+					get { return _source; }
+					set
+					{
+						if (value == _source)
+							return;
+
+						_source = value;
+						NotifyPropertyChanged(() => Source);
+					}
+				}
+			}
+
+			private ObservableCollection<ChildDependency> _children;
+			public ObservableCollection<ChildDependency> Children
+			{
+				[DebuggerStepThrough]
+				get { return _children; }
+				set
+				{
+					if (value == _children)
+						return;
+
+					_children = value;
+					NotifyPropertyChanged(() => Children);
+				}
+			}
+
+			public decimal Target
+			{
+				get
+				{
+					Property(() => Target)
+						.Depends(p => p.OnCollectionChildProperty(() => Children, k => k.Source));
+
+					if (Children == null)
+						return 0;
+
+					return Children.Select(k => k.Source).SumOrZero();
+				}
+			}
+		}
+
+		[TestMethod]
+		public void DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire()
+		{
+			DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_Impl(useSmartNotification: true);
+			DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_Impl(useSmartNotification: false);
+		}
+
+		private static void DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_Impl(bool useSmartNotification)
+		{
+			var collection1 =
+				new ObservableCollection
+					<DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency>();
+
+			collection1.Add(new DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency(useSmartNotification)
+			{
+				Source = 1
+			});
+			collection1.Add(new DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency(useSmartNotification)
+			{
+				Source = 10
+			});
+
+			var collection2 =
+				new ObservableCollection
+					<DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency>();
+
+			collection2.Add(new DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency(useSmartNotification)
+			{
+				Source = 10
+			});
+			collection2.Add(new DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency(useSmartNotification)
+			{
+				Source = 100
+			});
+
+			var tu = new DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass();
+			var recorder = CreatePropertyChangeRecorder(tu, k => k.Target);
+
+			tu.Children = collection1;
+
+			Assert.IsTrue(recorder.HasChanged);
+			Assert.AreEqual(1, recorder.NumberOfChanges);
+			Assert.AreEqual(11m, recorder.NewValues[0]);
+
+			collection1.Add(new DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency(useSmartNotification)
+			{
+				Source = 10
+			});
+			Assert.AreEqual(2, recorder.NumberOfChanges);
+			Assert.AreEqual(21m, recorder.NewValues[1]);
+
+			collection1[0].Source = 5;
+			collection1[2].Source = 5;
+			Assert.AreEqual(4, recorder.NumberOfChanges);
+			Assert.AreEqual(20m, recorder.NewValues[3]);
+
+			collection1.Remove(collection1[2]);
+			Assert.AreEqual(5, recorder.NumberOfChanges);
+			Assert.AreEqual(15m, recorder.NewValues[4]);
+
+			tu.Children = collection2;
+			Assert.AreEqual(6, recorder.NumberOfChanges);
+			Assert.AreEqual(110m, recorder.NewValues[5]);
+
+			collection2.Add(new DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency(useSmartNotification)
 			{
 				Source = 100
 			});
