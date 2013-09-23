@@ -3,7 +3,7 @@
   
   <Identity Name="108fee0e-44f6-4dbf-bc89-384cc9277533"
             Publisher="CN=kstumpf"
-            Version="1.0.0.0" />
+            Version="1.0.1.0" />
   
   <Properties>
     <DisplayName>PropertyDependencyFramework_WindowsStore_Tests</DisplayName>

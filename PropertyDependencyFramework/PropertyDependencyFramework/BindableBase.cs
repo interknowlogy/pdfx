@@ -372,29 +372,9 @@ namespace PropertyDependencyFramework
 
 			_propertyDependencies[masterPropertyOwner].PropertyDependencies[masterPropertyName].DependentProperties.Add( dependantPropertyName );
 
-			BindableBase bindableMasterPropertyOwner = masterPropertyOwner as BindableBase;
-			if ( bindableMasterPropertyOwner == null )
-			{
-				masterPropertyOwner.PropertyChanged -= OnPropertyOfDependencyChanged;
-				masterPropertyOwner.PropertyChanged += OnPropertyOfDependencyChanged;
-
-				if ( masterPropertyOwner is IDependencyFrameworkNotifyPropertyChangedInTransaction )
-				{
-					( (IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner ).PropertyChangedInTransaction -= OnPropertyOfDependencyChangedInTransaction;
-					( (IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner ).PropertyChangedInTransaction += OnPropertyOfDependencyChangedInTransaction;
-				}
-			}
-			else
-			{
-				if ( !_registrationIdHashSet.Contains( bindableMasterPropertyOwner.RegistrationId ) )
-				{
-					masterPropertyOwner.PropertyChanged += OnPropertyOfDependencyChanged;
-					( (IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner ).PropertyChangedInTransaction += OnPropertyOfDependencyChangedInTransaction;
-
-					_registrationIdHashSet.Add( bindableMasterPropertyOwner.RegistrationId );
-				}
-			}
+			SubscribeToMasterPropertyOwner( masterPropertyOwner );
 		}
+
 
 		void IBindableHiddenRegistrationAPI.RegisterPropertyDependency( INotifyCollectionChanged masterPropertyOwnerCollection, string masterPropertyName, string dependantPropertyName )
 		{
@@ -425,14 +405,7 @@ namespace PropertyDependencyFramework
 			EnsurePropertyDependencyDictionaryContainsMasterObject( masterPropertyOwner );
 			_propertyDependencies[masterPropertyOwner].Callbacks.Add( callbackContainer );
 
-			masterPropertyOwner.PropertyChanged -= OnPropertyOfDependencyChanged;
-			masterPropertyOwner.PropertyChanged += OnPropertyOfDependencyChanged;
-
-			if ( masterPropertyOwner is IDependencyFrameworkNotifyPropertyChangedInTransaction )
-			{
-				( (IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner ).PropertyChangedInTransaction -= OnPropertyOfDependencyChangedInTransaction;
-				( (IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner ).PropertyChangedInTransaction += OnPropertyOfDependencyChangedInTransaction;
-			}
+			SubscribeToMasterPropertyOwner( masterPropertyOwner );
 		}
 
 		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T>( T masterPropertyOwner, string masterPropertyName, CallbackContainer callbackContainer )
@@ -440,14 +413,7 @@ namespace PropertyDependencyFramework
 			EnsurePropertyDependencyDictionaryAcceptsDependantProperties( masterPropertyOwner, masterPropertyName );
 			_propertyDependencies[masterPropertyOwner].PropertyDependencies[masterPropertyName].Callbacks.Add( callbackContainer );
 
-			masterPropertyOwner.PropertyChanged -= OnPropertyOfDependencyChanged;
-			masterPropertyOwner.PropertyChanged += OnPropertyOfDependencyChanged;
-
-			if ( masterPropertyOwner is IDependencyFrameworkNotifyPropertyChangedInTransaction )
-			{
-				( (IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner ).PropertyChangedInTransaction -= OnPropertyOfDependencyChangedInTransaction;
-				( (IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner ).PropertyChangedInTransaction += OnPropertyOfDependencyChangedInTransaction;
-			}
+			SubscribeToMasterPropertyOwner( masterPropertyOwner );
 		}
 
 		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T>( INotifyCollectionChanged masterPropertyOwnerCollection, string masterPropertyName, CallbackContainer callbackContainer )
@@ -491,7 +457,7 @@ namespace PropertyDependencyFramework
 
 				if ( propertyChangedMaster is IDependencyFrameworkNotifyPropertyChangedInTransaction )
 				{
-					( (IDependencyFrameworkNotifyPropertyChangedInTransaction)propertyChangedMaster ).PropertyChangedInTransaction -= OnPropertyOfDependencyChangedInTransaction;
+					((IDependencyFrameworkNotifyPropertyChangedInTransaction)propertyChangedMaster).PropertyChangedInTransaction -= OnPropertyOfDependencyChangedInTransaction;
 				}
 				_registrationIdHashSet.Clear();
 			}
@@ -553,24 +519,58 @@ namespace PropertyDependencyFramework
 				{
 					_propertyDependencies[masterPropertyOwner].PropertyDependencies.Remove( masterPropertyName );
 
-					if ( _propertyDependencies[masterPropertyOwner].PropertyDependencies.Count == 0 &&
-						_propertyDependencies[masterPropertyOwner].Callbacks.Count == 0 )
-					{
-						_propertyDependencies.Remove( masterPropertyOwner );
-						masterPropertyOwner.PropertyChanged -= OnPropertyOfDependencyChanged;
-						if ( masterPropertyOwner is IDependencyFrameworkNotifyPropertyChangedInTransaction )
-						{
-							( (IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner ).PropertyChangedInTransaction -= OnPropertyOfDependencyChangedInTransaction;
-
-						}
-						if ( masterPropertyOwner is BindableBase )
-						{
-							_registrationIdHashSet.Remove( ((BindableBase)masterPropertyOwner).RegistrationId );
-						}
-					}
+					UnsubscribeFromMasterPropertyOwner(masterPropertyOwner);
 				}
 			}
 		}
+
+		private void SubscribeToMasterPropertyOwner( INotifyPropertyChanged masterPropertyOwner )
+		{
+			BindableBase bindableMasterPropertyOwner = masterPropertyOwner as BindableBase;
+			if ( bindableMasterPropertyOwner == null )
+			{
+				masterPropertyOwner.PropertyChanged -= OnPropertyOfDependencyChanged;
+				masterPropertyOwner.PropertyChanged += OnPropertyOfDependencyChanged;
+
+				if ( masterPropertyOwner is IDependencyFrameworkNotifyPropertyChangedInTransaction )
+				{
+					((IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner)
+						.PropertyChangedInTransaction -= OnPropertyOfDependencyChangedInTransaction;
+					((IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner)
+						.PropertyChangedInTransaction += OnPropertyOfDependencyChangedInTransaction;
+				}
+			}
+			else
+			{
+				if ( !_registrationIdHashSet.Contains( bindableMasterPropertyOwner.RegistrationId ) )
+				{
+					bindableMasterPropertyOwner.PropertyChanged += OnPropertyOfDependencyChanged;
+					bindableMasterPropertyOwner.PropertyChangedInTransaction += OnPropertyOfDependencyChangedInTransaction;
+
+					_registrationIdHashSet.Add( bindableMasterPropertyOwner.RegistrationId );
+				}
+			}
+		}
+
+		private void UnsubscribeFromMasterPropertyOwner(INotifyPropertyChanged masterPropertyOwner)
+		{
+			if (_propertyDependencies[masterPropertyOwner].PropertyDependencies.Count == 0 &&
+			    _propertyDependencies[masterPropertyOwner].Callbacks.Count == 0)
+			{
+				_propertyDependencies.Remove(masterPropertyOwner);
+				masterPropertyOwner.PropertyChanged -= OnPropertyOfDependencyChanged;
+				if (masterPropertyOwner is IDependencyFrameworkNotifyPropertyChangedInTransaction)
+				{
+					((IDependencyFrameworkNotifyPropertyChangedInTransaction) masterPropertyOwner).PropertyChangedInTransaction -=
+						OnPropertyOfDependencyChangedInTransaction;
+				}
+				if (masterPropertyOwner is BindableBase)
+				{
+					_registrationIdHashSet.Remove(((BindableBase) masterPropertyOwner).RegistrationId);
+				}
+			}
+		}
+
 		#endregion
 
 		#region Helpers
