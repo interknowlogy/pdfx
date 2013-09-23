@@ -16,9 +16,9 @@ using PropertyDependencyFramework.Interfaces;
 
 namespace PropertyDependencyFramework
 {
-	public abstract class BindableBase : INotifyPropertyChanged, 
-									 IDependencyFrameworkNotifyPropertyChangedInTransaction, 
-								     IDisposable,
+	public abstract class BindableBase : INotifyPropertyChanged,
+									 IDependencyFrameworkNotifyPropertyChangedInTransaction,
+									 IDisposable,
 									 IBindableHiddenRegistrationAPI,
 									 IBindableHiddenBaseAPI,
 									 IBindableBaseAccessToProtectedFunctionality
@@ -30,7 +30,7 @@ namespace PropertyDependencyFramework
 			UseSmartPropertyChangeNotificationByDefault = true;
 		}
 
-		protected BindableBase(bool useSmartPropertyChangeNotificationByDefault)
+		protected BindableBase( bool useSmartPropertyChangeNotificationByDefault )
 		{
 			UseSmartPropertyChangeNotificationByDefault = useSmartPropertyChangeNotificationByDefault;
 		}
@@ -58,11 +58,31 @@ namespace PropertyDependencyFramework
 		public event EventHandler<PropertyChangedEventArgs> PropertyChangedInTransaction;
 		#endregion
 
+		#region Force DeferalCode
+		private static DependencyFrameworkNotifyPropertyChangedScope _deferredOnlyScope;
+		public static bool CanDeferNotifications()
+		{
+			return DependencyFrameworkNotifyPropertyChangedScope.Current == null;
+		}
+		public static void DeferNotifications()
+		{
+			_deferredOnlyScope = new DependencyFrameworkNotifyPropertyChangedScope( forDeferalOnly: true );
+		}
+		public static bool NotificationsDefered()
+		{
+			return _deferredOnlyScope != null;
+		}
+		public static void ResumeNotifications()
+		{
+			_deferredOnlyScope.Dispose();
+			_deferredOnlyScope = null;
+		}
+		#endregion
 
 		#region Public Methods
-		void IDependencyFrameworkNotifyPropertyChangedInTransaction.FirePropertyChanged(string propertyName)
+		void IDependencyFrameworkNotifyPropertyChangedInTransaction.FirePropertyChanged( string propertyName )
 		{
-			OnPropertyChanged(propertyName);
+			OnPropertyChanged( propertyName );
 		}
 
 		/// <summary>
@@ -70,8 +90,8 @@ namespace PropertyDependencyFramework
 		/// </summary>
 		public void Dispose()
 		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
+			Dispose( true );
+			GC.SuppressFinalize( this );
 		}
 		#endregion
 
@@ -84,7 +104,9 @@ namespace PropertyDependencyFramework
 		/// own unmanaged resources. A call to the base method should always be included.
 		/// </remarks>
 		protected virtual void ReleaseUnmanagedResources()
-		{ }
+		{
+			UnsubscribeAllNotifications();
+		}
 
 		/// <summary>
 		/// Releases managed resources during Dispose.
@@ -102,9 +124,9 @@ namespace PropertyDependencyFramework
 		/// Releases unmanaged and - optionally - managed resources
 		/// </summary>
 		/// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-		private void Dispose(bool disposing)
+		private void Dispose( bool disposing )
 		{
-			if (_disposed)
+			if ( _disposed )
 			{
 				// decided that it's OK for dispose to be called multiple times, just silently return
 				return;
@@ -114,7 +136,7 @@ namespace PropertyDependencyFramework
 			_disposed = true;
 
 			ReleaseUnmanagedResources();
-			if (disposing)
+			if ( disposing )
 			{
 				ReleaseManagedResources();
 			}
@@ -128,7 +150,25 @@ namespace PropertyDependencyFramework
 		/// </summary>
 		~BindableBase()
 		{
-			Dispose(false);
+			Dispose( false );
+		}
+		private void UnsubscribeAllNotifications()
+		{
+			if ( PropertyChanged == null )
+				return;
+			Delegate[] invocationList = PropertyChanged.GetInvocationList();
+			if ( invocationList.Length == 0 )
+				return;
+#if DEBUG
+			if ( ArePropertyDependencySanityChecksEnabled )
+			{
+				foreach ( Delegate attached in invocationList )
+				{
+					Debug.WriteLine( String.Format( CultureInfo.CurrentCulture, "Detaching: {0};{1}", attached.Target, attached.Method.Name ) );
+				}
+			}
+#endif
+			PropertyChanged = null;
 		}
 		#endregion
 
@@ -137,305 +177,326 @@ namespace PropertyDependencyFramework
 		#region Imperative Property Dependency Registration API
 
 		#region Public API for Derived Classes
-		protected void RegisterPropertyDependency<T, T1, T2>(T masterPropertyOwner, Expression<Func<T, T1>> masterProperty, Expression<Func<T2>> dependentProperty) where T : INotifyPropertyChanged
+		protected void RegisterPropertyDependency<T, T1, T2>( T masterPropertyOwner, Expression<Func<T, T1>> masterProperty, Expression<Func<T2>> dependentProperty ) where T : INotifyPropertyChanged
 		{
-			HiddenRegistrationAPI.RegisterPropertyDependency(masterPropertyOwner, masterProperty, dependentProperty);
+			HiddenRegistrationAPI.RegisterPropertyDependency( masterPropertyOwner, masterProperty, dependentProperty );
 		}
 
-		protected void RegisterPropertyDependency<T, T1, T2>(DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection, 
+		protected void RegisterPropertyDependency<T, T1, T2>( DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection,
 															 Expression<Func<T, T1>> masterProperty,
-															 Expression<Func<T2>> dependentProperty) where T : INotifyPropertyChanged
-		
+															 Expression<Func<T2>> dependentProperty ) where T : INotifyPropertyChanged
 		{
-			HiddenRegistrationAPI.RegisterPropertyDependency(masterPropertyOwnerCollection, masterProperty, dependentProperty);
+			HiddenRegistrationAPI.RegisterPropertyDependency( masterPropertyOwnerCollection, masterProperty, dependentProperty );
 		}
 
-		protected void RegisterPropertyDependency<T, T1, T2>(ObservableCollection<T> masterPropertyOwnerCollection,
+		protected void RegisterPropertyDependency<T, T1, T2>( ObservableCollection<T> masterPropertyOwnerCollection,
 													 Expression<Func<T, T1>> masterProperty,
-													 Expression<Func<T2>> dependentProperty) where T : INotifyPropertyChanged
+													 Expression<Func<T2>> dependentProperty ) where T : INotifyPropertyChanged
 		{
-			HiddenRegistrationAPI.RegisterPropertyDependency((INotifyCollectionChanged)masterPropertyOwnerCollection, masterProperty, dependentProperty);
+			HiddenRegistrationAPI.RegisterPropertyDependency( (INotifyCollectionChanged)masterPropertyOwnerCollection, masterProperty, dependentProperty );
 		}
 
-		protected void RegisterPropertyDependency<T, T1, T2>(INotifyCollectionChanged masterPropertyOwnerCollection,
+		protected void RegisterPropertyDependency<T, T1, T2>( INotifyCollectionChanged masterPropertyOwnerCollection,
 													 Expression<Func<T, T1>> masterProperty,
-													 Expression<Func<T2>> dependentProperty) where T : INotifyPropertyChanged
+													 Expression<Func<T2>> dependentProperty ) where T : INotifyPropertyChanged
 		{
-			HiddenRegistrationAPI.RegisterPropertyDependency(masterPropertyOwnerCollection, masterProperty, dependentProperty);
+			HiddenRegistrationAPI.RegisterPropertyDependency( masterPropertyOwnerCollection, masterProperty, dependentProperty );
 		}
 
 
-		protected void RegisterCallbackDependency<T>(T masterPropertyOwner, Action callback)
+		protected void RegisterCallbackDependency<T>( T masterPropertyOwner, Action callback )
 			where T : INotifyPropertyChanged
 		{
-			HiddenRegistrationAPI.RegisterCallbackDependency(masterPropertyOwner, callback);
+			HiddenRegistrationAPI.RegisterCallbackDependency( masterPropertyOwner, callback );
 		}
 
-		protected void RegisterCallbackDependency<T, T1>(T masterPropertyOwner, Expression<Func<T, T1>> masterProperty, Action callback)
+		protected void RegisterCallbackDependency<T, T1>( T masterPropertyOwner, Expression<Func<T, T1>> masterProperty, Action callback )
 			where T : INotifyPropertyChanged
 		{
-			HiddenRegistrationAPI.RegisterCallbackDependency(masterPropertyOwner, masterProperty, callback);
+			HiddenRegistrationAPI.RegisterCallbackDependency( masterPropertyOwner, masterProperty, callback );
 		}
 
-		protected void RegisterCallbackDependency<T, T1>(T[] masterPropertyOwners, Expression<Func<T, T1>> masterProperty, Action callback)
+		protected void RegisterCallbackDependency<T, T1>( T[] masterPropertyOwners, Expression<Func<T, T1>> masterProperty, Action callback )
 			where T : INotifyPropertyChanged
 		{
-			HiddenRegistrationAPI.RegisterCallbackDependency(masterPropertyOwners, masterProperty, callback);
+			HiddenRegistrationAPI.RegisterCallbackDependency( masterPropertyOwners, masterProperty, callback );
 		}
 
-		protected void RegisterCallbackDependency<T>(DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection, Action callback)
+		protected void RegisterCallbackDependency<T>( DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection, Action callback )
 		{
-			HiddenRegistrationAPI.RegisterCallbackDependency(masterPropertyOwnerCollection, callback);
+			HiddenRegistrationAPI.RegisterCallbackDependency( masterPropertyOwnerCollection, callback );
 		}
 
-		protected void RegisterCallbackDependency<T>(ObservableCollection<T> masterPropertyOwnerCollection, Action callback)
+		protected void RegisterCallbackDependency<T>( ObservableCollection<T> masterPropertyOwnerCollection, Action callback )
 		{
-			HiddenRegistrationAPI.RegisterCallbackDependency((INotifyCollectionChanged)masterPropertyOwnerCollection, callback);
+			HiddenRegistrationAPI.RegisterCallbackDependency( (INotifyCollectionChanged)masterPropertyOwnerCollection, callback );
 		}
 
-		protected void RegisterCallbackDependency(INotifyCollectionChanged masterPropertyOwnerCollection, Action callback)
+		protected void RegisterCallbackDependency( INotifyCollectionChanged masterPropertyOwnerCollection, Action callback )
 		{
-			HiddenRegistrationAPI.RegisterCallbackDependency(masterPropertyOwnerCollection, callback);
+			HiddenRegistrationAPI.RegisterCallbackDependency( masterPropertyOwnerCollection, callback );
 		}
 
-		protected void RegisterCallbackDependency<T, T1>(DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty, Action callback)
+		protected void RegisterCallbackDependency<T, T1>( DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty, Action callback )
 				where T : INotifyPropertyChanged
 		{
-			HiddenRegistrationAPI.RegisterCallbackDependency(masterPropertyOwnerCollection, masterProperty, callback);
+			HiddenRegistrationAPI.RegisterCallbackDependency( masterPropertyOwnerCollection, masterProperty, callback );
 		}
 
-		protected void RegisterCallbackDependency<T, T1>(ObservableCollection<T> masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty, Action callback)
+		protected void RegisterCallbackDependency<T, T1>( ObservableCollection<T> masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty, Action callback )
 		where T : INotifyPropertyChanged
 		{
-			HiddenRegistrationAPI.RegisterCallbackDependency(masterPropertyOwnerCollection, masterProperty, callback);
+			HiddenRegistrationAPI.RegisterCallbackDependency( masterPropertyOwnerCollection, masterProperty, callback );
 		}
 
-		protected void RegisterCallbackDependency<T, T1>(INotifyCollectionChanged masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty, Action callback)
+		protected void RegisterCallbackDependency<T, T1>( INotifyCollectionChanged masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty, Action callback )
 		where T : INotifyPropertyChanged
 		{
-			HiddenRegistrationAPI.RegisterCallbackDependency(masterPropertyOwnerCollection, masterProperty, callback);
+			HiddenRegistrationAPI.RegisterCallbackDependency( masterPropertyOwnerCollection, masterProperty, callback );
 		}
 
 		protected void UnregisterAllPropertyDependencies()
 		{
 			HiddenRegistrationAPI.UnregisterAllPropertyDependencies();
 		}
-		
-		protected void UnRegisterPropertyDependency(INotifyCollectionChanged masterPropertyOwnerCollection, string masterPropertyName, string dependantPropertyName)
+
+		protected void UnRegisterPropertyDependency( INotifyCollectionChanged masterPropertyOwnerCollection, string masterPropertyName, string dependantPropertyName )
 		{
-			HiddenRegistrationAPI.UnRegisterPropertyDependency(masterPropertyOwnerCollection, masterPropertyName, dependantPropertyName);
+			HiddenRegistrationAPI.UnRegisterPropertyDependency( masterPropertyOwnerCollection, masterPropertyName, dependantPropertyName );
 		}
 
-		protected void UnRegisterPropertyDependency(INotifyPropertyChanged masterPropertyOwner, string masterPropertyName, string dependantPropertyName)
+		protected void UnRegisterPropertyDependency( INotifyPropertyChanged masterPropertyOwner, string masterPropertyName, string dependantPropertyName )
 		{
-			HiddenRegistrationAPI.UnRegisterPropertyDependency(masterPropertyOwner, masterPropertyName, dependantPropertyName);
+			HiddenRegistrationAPI.UnRegisterPropertyDependency( masterPropertyOwner, masterPropertyName, dependantPropertyName );
 		}
 		#endregion
 
 		#region Hidden API for Declarative API
 		private IBindableHiddenRegistrationAPI HiddenRegistrationAPI
 		{
-			get { return (IBindableHiddenRegistrationAPI) this; }
+			get { return (IBindableHiddenRegistrationAPI)this; }
 		}
 
-		void IBindableHiddenRegistrationAPI.RegisterPropertyDependency<T, T1, T2>(DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection,
+		void IBindableHiddenRegistrationAPI.RegisterPropertyDependency<T, T1, T2>( DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection,
 													 Expression<Func<T, T1>> masterProperty,
-													 Expression<Func<T2>> dependentProperty)
+													 Expression<Func<T2>> dependentProperty )
 		{
-			HiddenRegistrationAPI.RegisterPropertyDependency((INotifyCollectionChanged)masterPropertyOwnerCollection, masterProperty, dependentProperty);
+			HiddenRegistrationAPI.RegisterPropertyDependency( (INotifyCollectionChanged)masterPropertyOwnerCollection, masterProperty, dependentProperty );
 		}
 
-		void IBindableHiddenRegistrationAPI.RegisterPropertyDependency<T, T1, T2>(T masterPropertyOwner,
+		void IBindableHiddenRegistrationAPI.RegisterPropertyDependency<T, T1, T2>( T masterPropertyOwner,
 																					 Expression<Func<T, T1>> masterProperty,
-																					 Expression<Func<T2>> dependentProperty)
+																					 Expression<Func<T2>> dependentProperty )
 		{
-			HiddenRegistrationAPI.RegisterPropertyDependency(masterPropertyOwner, PropertyNameResolver.GetPropertyName(masterProperty), PropertyNameResolver.GetPropertyName(dependentProperty));
+			HiddenRegistrationAPI.RegisterPropertyDependency( masterPropertyOwner, PropertyNameResolver.GetPropertyName( masterProperty ), PropertyNameResolver.GetPropertyName( dependentProperty ) );
 		}
 
-		void IBindableHiddenRegistrationAPI.RegisterPropertyDependency<T, T1, T2>(INotifyCollectionChanged masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty, Expression<Func<T2>> dependentProperty)
+		void IBindableHiddenRegistrationAPI.RegisterPropertyDependency<T, T1, T2>( INotifyCollectionChanged masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty, Expression<Func<T2>> dependentProperty )
 		{
-			HiddenRegistrationAPI.RegisterPropertyDependency(masterPropertyOwnerCollection, PropertyNameResolver.GetPropertyName(masterProperty), PropertyNameResolver.GetPropertyName(dependentProperty));
+			HiddenRegistrationAPI.RegisterPropertyDependency( masterPropertyOwnerCollection, PropertyNameResolver.GetPropertyName( masterProperty ), PropertyNameResolver.GetPropertyName( dependentProperty ) );
 		}
 
 
-		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T>(T masterPropertyOwner, Action callback)
+		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T>( T masterPropertyOwner, Action callback )
 		{
-			HiddenRegistrationAPI.RegisterCallbackDependency(masterPropertyOwner, new CallbackContainer(callback));
+			HiddenRegistrationAPI.RegisterCallbackDependency( masterPropertyOwner, new CallbackContainer( callback ) );
 		}
 
-		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T, T1>(T masterPropertyOwner, Expression<Func<T, T1>> masterProperty, Action callback)
+		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T, T1>( T masterPropertyOwner, Expression<Func<T, T1>> masterProperty, Action callback )
 		{
-			HiddenRegistrationAPI.RegisterCallbackDependency(masterPropertyOwner, masterProperty, new CallbackContainer(callback));
+			HiddenRegistrationAPI.RegisterCallbackDependency( masterPropertyOwner, masterProperty, new CallbackContainer( callback ) );
 		}
 
-		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T, T1>(T masterPropertyOwner, Expression<Func<T, T1>> masterProperty, CallbackContainer callbackContainer)
+		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T, T1>( T masterPropertyOwner, Expression<Func<T, T1>> masterProperty, CallbackContainer callbackContainer )
 		{
-			HiddenRegistrationAPI.RegisterCallbackDependency(masterPropertyOwner, PropertyNameResolver.GetPropertyName(masterProperty), callbackContainer);
+			HiddenRegistrationAPI.RegisterCallbackDependency( masterPropertyOwner, PropertyNameResolver.GetPropertyName( masterProperty ), callbackContainer );
 		}
 
-		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T, T1>(T[] masterPropertyOwners, Expression<Func<T, T1>> masterProperty, Action callback)
+		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T, T1>( T[] masterPropertyOwners, Expression<Func<T, T1>> masterProperty, Action callback )
 		{
-			foreach (T masterPropertyOwner in masterPropertyOwners)
+			foreach ( T masterPropertyOwner in masterPropertyOwners )
 			{
-				HiddenRegistrationAPI.RegisterCallbackDependency(masterPropertyOwner, masterProperty, callback);
+				HiddenRegistrationAPI.RegisterCallbackDependency( masterPropertyOwner, masterProperty, callback );
 			}
 		}
 
-		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T>(DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection, Action callback)
+		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T>( DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection, Action callback )
 		{
-			HiddenRegistrationAPI.RegisterCallbackDependency((INotifyCollectionChanged)masterPropertyOwnerCollection, callback);
+			HiddenRegistrationAPI.RegisterCallbackDependency( (INotifyCollectionChanged)masterPropertyOwnerCollection, callback );
 		}
 
-		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T, T1>(DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty,
-								Action callback)
+		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T, T1>( DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty,
+								Action callback )
 		{
-			HiddenRegistrationAPI.RegisterCallbackDependency((INotifyCollectionChanged)masterPropertyOwnerCollection, masterProperty, callback);
+			HiddenRegistrationAPI.RegisterCallbackDependency( (INotifyCollectionChanged)masterPropertyOwnerCollection, masterProperty, callback );
 		}
 
-		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T, T1>(INotifyCollectionChanged masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty, Action callback)
+		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T, T1>( INotifyCollectionChanged masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty, Action callback )
 		{
-			HiddenRegistrationAPI.RegisterCallbackDependency(masterPropertyOwnerCollection, masterProperty, new CallbackContainer(callback));
+			HiddenRegistrationAPI.RegisterCallbackDependency( masterPropertyOwnerCollection, masterProperty, new CallbackContainer( callback ) );
 		}
 
-		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency(INotifyCollectionChanged masterPropertyOwnerCollection, Action callback)
+		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency( INotifyCollectionChanged masterPropertyOwnerCollection, Action callback )
 		{
-			HiddenRegistrationAPI.RegisterCallbackDependency(masterPropertyOwnerCollection, new CallbackContainer(callback));
+			HiddenRegistrationAPI.RegisterCallbackDependency( masterPropertyOwnerCollection, new CallbackContainer( callback ) );
 		}
 
-		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T, T1>(INotifyCollectionChanged masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty, CallbackContainer callbackContainer)
+		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T, T1>( INotifyCollectionChanged masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty, CallbackContainer callbackContainer )
 		{
-			HiddenRegistrationAPI.RegisterCallbackDependency<T>(masterPropertyOwnerCollection, PropertyNameResolver.GetPropertyName(masterProperty), callbackContainer);
+			HiddenRegistrationAPI.RegisterCallbackDependency<T>( masterPropertyOwnerCollection, PropertyNameResolver.GetPropertyName( masterProperty ), callbackContainer );
 		}
 
-		void IBindableHiddenRegistrationAPI.RegisterPropertyDependency(INotifyPropertyChanged masterPropertyOwner, string masterPropertyName, string dependantPropertyName)
+		private readonly HashSet<Guid> _registrationIdHashSet = new HashSet<Guid>();
+		private readonly Guid _registrationId = Guid.NewGuid();
+		internal Guid RegistrationId
 		{
-			if (dependantPropertyName == null)
-				throw new ArgumentNullException("dependantPropertyName");
+			[DebuggerStepThrough]
+			get { return _registrationId; }
+		}
+		void IBindableHiddenRegistrationAPI.RegisterPropertyDependency( INotifyPropertyChanged masterPropertyOwner, string masterPropertyName, string dependantPropertyName )
+		{
+			if ( dependantPropertyName == null )
+				throw new ArgumentNullException( "dependantPropertyName" );
 
-			EnsurePropertyDependencyDictionaryAcceptsDependantProperties(masterPropertyOwner, masterPropertyName);
+			EnsurePropertyDependencyDictionaryAcceptsDependantProperties( masterPropertyOwner, masterPropertyName );
 
-			if (_propertyDependencies[masterPropertyOwner].PropertyDependencies[masterPropertyName].DependentProperties.Contains(dependantPropertyName))
+			if ( _propertyDependencies[masterPropertyOwner].PropertyDependencies[masterPropertyName].DependentProperties.Contains( dependantPropertyName ) )
 				return;
 
 #if DEBUG
-			if (ArePropertyDependencySanityChecksEnabled)
+			if ( ArePropertyDependencySanityChecksEnabled )
 			{
-				EnsureObjectExposesProperty(this, dependantPropertyName);
+				EnsureObjectExposesProperty( this, dependantPropertyName );
 			}
 #endif
 
-			_propertyDependencies[masterPropertyOwner].PropertyDependencies[masterPropertyName].DependentProperties.Add(dependantPropertyName);
+			_propertyDependencies[masterPropertyOwner].PropertyDependencies[masterPropertyName].DependentProperties.Add( dependantPropertyName );
 
-			masterPropertyOwner.PropertyChanged -= OnPropertyOfDependencyChanged;
-			masterPropertyOwner.PropertyChanged += OnPropertyOfDependencyChanged;
-
-			if (masterPropertyOwner is IDependencyFrameworkNotifyPropertyChangedInTransaction)
+			BindableBase bindableMasterPropertyOwner = masterPropertyOwner as BindableBase;
+			if ( bindableMasterPropertyOwner == null )
 			{
-				((IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner).PropertyChangedInTransaction -= OnPropertyOfDependencyChangedInTransaction;
-				((IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner).PropertyChangedInTransaction += OnPropertyOfDependencyChangedInTransaction;
+				masterPropertyOwner.PropertyChanged -= OnPropertyOfDependencyChanged;
+				masterPropertyOwner.PropertyChanged += OnPropertyOfDependencyChanged;
+
+				if ( masterPropertyOwner is IDependencyFrameworkNotifyPropertyChangedInTransaction )
+				{
+					( (IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner ).PropertyChangedInTransaction -= OnPropertyOfDependencyChangedInTransaction;
+					( (IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner ).PropertyChangedInTransaction += OnPropertyOfDependencyChangedInTransaction;
+				}
+			}
+			else
+			{
+				if ( !_registrationIdHashSet.Contains( bindableMasterPropertyOwner.RegistrationId ) )
+				{
+					masterPropertyOwner.PropertyChanged += OnPropertyOfDependencyChanged;
+					( (IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner ).PropertyChangedInTransaction += OnPropertyOfDependencyChangedInTransaction;
+
+					_registrationIdHashSet.Add( bindableMasterPropertyOwner.RegistrationId );
+				}
 			}
 		}
 
-		void IBindableHiddenRegistrationAPI.RegisterPropertyDependency(INotifyCollectionChanged masterPropertyOwnerCollection, string masterPropertyName, string dependantPropertyName)
+		void IBindableHiddenRegistrationAPI.RegisterPropertyDependency( INotifyCollectionChanged masterPropertyOwnerCollection, string masterPropertyName, string dependantPropertyName )
 		{
-			if (dependantPropertyName == null)
-				throw new ArgumentNullException(dependantPropertyName);
+			if ( dependantPropertyName == null )
+				throw new ArgumentNullException( dependantPropertyName );
 
-			foreach (INotifyPropertyChanged child in ((IEnumerable)masterPropertyOwnerCollection))
+			foreach ( INotifyPropertyChanged child in ((IEnumerable)masterPropertyOwnerCollection) )
 			{
-				HiddenRegistrationAPI.RegisterPropertyDependency(child, masterPropertyName, dependantPropertyName);
-			}
-
-			masterPropertyOwnerCollection.CollectionChanged -= OnCollectionChanged;
-			masterPropertyOwnerCollection.CollectionChanged += OnCollectionChanged;
-
-			Action<object> registerNewItemDelegate = newItem => HiddenRegistrationAPI.RegisterPropertyDependency((INotifyPropertyChanged)newItem, masterPropertyName, dependantPropertyName);
-			if (!_collectionDependencies.ContainsKey(masterPropertyOwnerCollection))
-				_collectionDependencies.Add(masterPropertyOwnerCollection, new CollectionPropertyDependencyRegistration());
-
-			CollectionPropertyDependencyRegistration propertyDependencyRegistration = _collectionDependencies[masterPropertyOwnerCollection];
-			propertyDependencyRegistration.ItemPropertyDependencyRegistrationDelegates.Add(new CollectionPropertyDependencyRegistration.PropertyRegistrationIdentifier(masterPropertyName, dependantPropertyName), registerNewItemDelegate);
-
-			if (!propertyDependencyRegistration.DependentProperties.Contains(dependantPropertyName))
-				propertyDependencyRegistration.DependentProperties.Add(dependantPropertyName);
-		}
-
-		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T>(T masterPropertyOwner, CallbackContainer callbackContainer)
-		{
-			EnsurePropertyDependencyDictionaryContainsMasterObject(masterPropertyOwner);
-			_propertyDependencies[masterPropertyOwner].Callbacks.Add(callbackContainer);
-
-			masterPropertyOwner.PropertyChanged -= OnPropertyOfDependencyChanged;
-			masterPropertyOwner.PropertyChanged += OnPropertyOfDependencyChanged;
-
-			if (masterPropertyOwner is IDependencyFrameworkNotifyPropertyChangedInTransaction)
-			{
-				((IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner).PropertyChangedInTransaction -= OnPropertyOfDependencyChangedInTransaction;
-				((IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner).PropertyChangedInTransaction += OnPropertyOfDependencyChangedInTransaction;
-			}
-		}
-
-		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T>(T masterPropertyOwner, string masterPropertyName, CallbackContainer callbackContainer)
-		{
-			EnsurePropertyDependencyDictionaryAcceptsDependantProperties(masterPropertyOwner, masterPropertyName);
-			_propertyDependencies[masterPropertyOwner].PropertyDependencies[masterPropertyName].Callbacks.Add(callbackContainer);
-
-			masterPropertyOwner.PropertyChanged -= OnPropertyOfDependencyChanged;
-			masterPropertyOwner.PropertyChanged += OnPropertyOfDependencyChanged;
-
-			if (masterPropertyOwner is IDependencyFrameworkNotifyPropertyChangedInTransaction)
-			{
-				((IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner).PropertyChangedInTransaction -= OnPropertyOfDependencyChangedInTransaction;
-				((IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner).PropertyChangedInTransaction += OnPropertyOfDependencyChangedInTransaction;
-			}
-		}
-
-		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T>(INotifyCollectionChanged masterPropertyOwnerCollection, string masterPropertyName, CallbackContainer callbackContainer)
-		{
-			foreach (T child in ((IEnumerable)masterPropertyOwnerCollection))
-			{
-				HiddenRegistrationAPI.RegisterCallbackDependency(child, masterPropertyName, callbackContainer);
+				HiddenRegistrationAPI.RegisterPropertyDependency( child, masterPropertyName, dependantPropertyName );
 			}
 
 			masterPropertyOwnerCollection.CollectionChanged -= OnCollectionChanged;
 			masterPropertyOwnerCollection.CollectionChanged += OnCollectionChanged;
 
-			Action<object> registerNewItemDelegate = newItem => HiddenRegistrationAPI.RegisterCallbackDependency((T)newItem, masterPropertyName, callbackContainer);
-			if (!_collectionDependencies.ContainsKey(masterPropertyOwnerCollection))
-				_collectionDependencies.Add(masterPropertyOwnerCollection, new CollectionPropertyDependencyRegistration());
+			Action<object> registerNewItemDelegate = newItem => HiddenRegistrationAPI.RegisterPropertyDependency( (INotifyPropertyChanged)newItem, masterPropertyName, dependantPropertyName );
+			if ( !_collectionDependencies.ContainsKey( masterPropertyOwnerCollection ) )
+				_collectionDependencies.Add( masterPropertyOwnerCollection, new CollectionPropertyDependencyRegistration() );
 
 			CollectionPropertyDependencyRegistration propertyDependencyRegistration = _collectionDependencies[masterPropertyOwnerCollection];
-			propertyDependencyRegistration.ItemPropertyDependencyRegistrationDelegates.Add(new CollectionPropertyDependencyRegistration.CallbackContainerRegistrationIdentifier(masterPropertyName, callbackContainer), registerNewItemDelegate);
-			propertyDependencyRegistration.Callbacks.Add(callbackContainer);
+			propertyDependencyRegistration.ItemPropertyDependencyRegistrationDelegates.Add( new CollectionPropertyDependencyRegistration.PropertyRegistrationIdentifier( masterPropertyName, dependantPropertyName ), registerNewItemDelegate );
+
+			if ( !propertyDependencyRegistration.DependentProperties.Contains( dependantPropertyName ) )
+				propertyDependencyRegistration.DependentProperties.Add( dependantPropertyName );
 		}
 
-		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency(INotifyCollectionChanged masterPropertyOwnerCollection, CallbackContainer callbackContainer)
+		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T>( T masterPropertyOwner, CallbackContainer callbackContainer )
+		{
+			EnsurePropertyDependencyDictionaryContainsMasterObject( masterPropertyOwner );
+			_propertyDependencies[masterPropertyOwner].Callbacks.Add( callbackContainer );
+
+			masterPropertyOwner.PropertyChanged -= OnPropertyOfDependencyChanged;
+			masterPropertyOwner.PropertyChanged += OnPropertyOfDependencyChanged;
+
+			if ( masterPropertyOwner is IDependencyFrameworkNotifyPropertyChangedInTransaction )
+			{
+				( (IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner ).PropertyChangedInTransaction -= OnPropertyOfDependencyChangedInTransaction;
+				( (IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner ).PropertyChangedInTransaction += OnPropertyOfDependencyChangedInTransaction;
+			}
+		}
+
+		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T>( T masterPropertyOwner, string masterPropertyName, CallbackContainer callbackContainer )
+		{
+			EnsurePropertyDependencyDictionaryAcceptsDependantProperties( masterPropertyOwner, masterPropertyName );
+			_propertyDependencies[masterPropertyOwner].PropertyDependencies[masterPropertyName].Callbacks.Add( callbackContainer );
+
+			masterPropertyOwner.PropertyChanged -= OnPropertyOfDependencyChanged;
+			masterPropertyOwner.PropertyChanged += OnPropertyOfDependencyChanged;
+
+			if ( masterPropertyOwner is IDependencyFrameworkNotifyPropertyChangedInTransaction )
+			{
+				( (IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner ).PropertyChangedInTransaction -= OnPropertyOfDependencyChangedInTransaction;
+				( (IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner ).PropertyChangedInTransaction += OnPropertyOfDependencyChangedInTransaction;
+			}
+		}
+
+		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T>( INotifyCollectionChanged masterPropertyOwnerCollection, string masterPropertyName, CallbackContainer callbackContainer )
+		{
+			foreach ( T child in ((IEnumerable)masterPropertyOwnerCollection) )
+			{
+				HiddenRegistrationAPI.RegisterCallbackDependency( child, masterPropertyName, callbackContainer );
+			}
+
+			masterPropertyOwnerCollection.CollectionChanged -= OnCollectionChanged;
+			masterPropertyOwnerCollection.CollectionChanged += OnCollectionChanged;
+
+			Action<object> registerNewItemDelegate = newItem => HiddenRegistrationAPI.RegisterCallbackDependency( (T)newItem, masterPropertyName, callbackContainer );
+			if ( !_collectionDependencies.ContainsKey( masterPropertyOwnerCollection ) )
+				_collectionDependencies.Add( masterPropertyOwnerCollection, new CollectionPropertyDependencyRegistration() );
+
+			CollectionPropertyDependencyRegistration propertyDependencyRegistration = _collectionDependencies[masterPropertyOwnerCollection];
+			propertyDependencyRegistration.ItemPropertyDependencyRegistrationDelegates.Add( new CollectionPropertyDependencyRegistration.CallbackContainerRegistrationIdentifier( masterPropertyName, callbackContainer ), registerNewItemDelegate );
+			propertyDependencyRegistration.Callbacks.Add( callbackContainer );
+		}
+
+		void IBindableHiddenRegistrationAPI.RegisterCallbackDependency( INotifyCollectionChanged masterPropertyOwnerCollection, CallbackContainer callbackContainer )
 		{
 			masterPropertyOwnerCollection.CollectionChanged -= OnCollectionChanged;
 			masterPropertyOwnerCollection.CollectionChanged += OnCollectionChanged;
 
-			if (!_collectionDependencies.ContainsKey(masterPropertyOwnerCollection))
-				_collectionDependencies.Add(masterPropertyOwnerCollection, new CollectionPropertyDependencyRegistration());
+			if ( !_collectionDependencies.ContainsKey( masterPropertyOwnerCollection ) )
+				_collectionDependencies.Add( masterPropertyOwnerCollection, new CollectionPropertyDependencyRegistration() );
 
 			CollectionPropertyDependencyRegistration propertyDependencyRegistration = _collectionDependencies[masterPropertyOwnerCollection];
-			propertyDependencyRegistration.Callbacks.Add(callbackContainer);
+			propertyDependencyRegistration.Callbacks.Add( callbackContainer );
 		}
 
 		void IBindableHiddenRegistrationAPI.UnregisterAllPropertyDependencies()
 		{
-			foreach (INotifyPropertyChanged propertyChangedMaster in _propertyDependencies.Keys.ToArray())
+			foreach ( INotifyPropertyChanged propertyChangedMaster in _propertyDependencies.Keys.ToArray() )
 			{
-				_propertyDependencies.Remove(propertyChangedMaster);
+				_propertyDependencies.Remove( propertyChangedMaster );
 
 				propertyChangedMaster.PropertyChanged -= OnPropertyOfDependencyChanged;
 
-				if (propertyChangedMaster is IDependencyFrameworkNotifyPropertyChangedInTransaction)
+				if ( propertyChangedMaster is IDependencyFrameworkNotifyPropertyChangedInTransaction )
 				{
-					((IDependencyFrameworkNotifyPropertyChangedInTransaction)propertyChangedMaster).PropertyChangedInTransaction -= OnPropertyOfDependencyChangedInTransaction;
+					( (IDependencyFrameworkNotifyPropertyChangedInTransaction)propertyChangedMaster ).PropertyChangedInTransaction -= OnPropertyOfDependencyChangedInTransaction;
 				}
+				_registrationIdHashSet.Clear();
 			}
 
-			foreach (INotifyCollectionChanged collection in _collectionDependencies.Keys.ToArray())
+			foreach ( INotifyCollectionChanged collection in _collectionDependencies.Keys.ToArray() )
 			{
 				collection.CollectionChanged -= OnCollectionChanged;
 			}
@@ -443,63 +504,68 @@ namespace PropertyDependencyFramework
 			_propertyDependencies.Clear();
 			_collectionDependencies.Clear();
 
-			if(this is IBindableExtensionHook)
+			if ( this is IBindableExtensionHook )
 				((IBindableExtensionHook)this).AfterUnregisterAllPropertyDependencies();
 		}
 
-		void IBindableHiddenRegistrationAPI.UnRegisterPropertyDependency(INotifyCollectionChanged masterPropertyOwnerCollection, string masterPropertyName, string dependantPropertyName)
+		void IBindableHiddenRegistrationAPI.UnRegisterPropertyDependency( INotifyCollectionChanged masterPropertyOwnerCollection, string masterPropertyName, string dependantPropertyName )
 		{
-			foreach (INotifyPropertyChanged child in ((IEnumerable)masterPropertyOwnerCollection))
+			foreach ( INotifyPropertyChanged child in ((IEnumerable)masterPropertyOwnerCollection) )
 			{
-				HiddenRegistrationAPI.UnRegisterPropertyDependency(child, masterPropertyName, dependantPropertyName);
+				HiddenRegistrationAPI.UnRegisterPropertyDependency( child, masterPropertyName, dependantPropertyName );
 			}
 
-			if (_collectionDependencies.ContainsKey(masterPropertyOwnerCollection))
+			if ( _collectionDependencies.ContainsKey( masterPropertyOwnerCollection ) )
 			{
 				CollectionPropertyDependencyRegistration propertyDependencyRegistration = _collectionDependencies[masterPropertyOwnerCollection];
 
-				if (propertyDependencyRegistration.DependentProperties.Contains(dependantPropertyName))
-					propertyDependencyRegistration.DependentProperties.Remove(dependantPropertyName);
+				if ( propertyDependencyRegistration.DependentProperties.Contains( dependantPropertyName ) )
+					propertyDependencyRegistration.DependentProperties.Remove( dependantPropertyName );
 
-				var key = propertyDependencyRegistration.ItemPropertyDependencyRegistrationDelegates.Keys.OfType<CollectionPropertyDependencyRegistration.PropertyRegistrationIdentifier>().FirstOrDefault(k => k.CollectionMasterPropertyName == masterPropertyName && k.DependentPropertyName == dependantPropertyName);
-				if (key != null)
-					propertyDependencyRegistration.ItemPropertyDependencyRegistrationDelegates.Remove(key);
+				var key = propertyDependencyRegistration.ItemPropertyDependencyRegistrationDelegates.Keys.OfType<CollectionPropertyDependencyRegistration.PropertyRegistrationIdentifier>().FirstOrDefault( k => k.CollectionMasterPropertyName == masterPropertyName && k.DependentPropertyName == dependantPropertyName );
+				if ( key != null )
+					propertyDependencyRegistration.ItemPropertyDependencyRegistrationDelegates.Remove( key );
 
-				if (propertyDependencyRegistration.DependentProperties.Count != 0)
+				if ( propertyDependencyRegistration.DependentProperties.Count != 0 )
 					return;
 
-				if (propertyDependencyRegistration.Callbacks.Count != 0)
+				if ( propertyDependencyRegistration.Callbacks.Count != 0 )
 					return;
 
-				if (propertyDependencyRegistration.ItemPropertyDependencyRegistrationDelegates.Count != 0)
+				if ( propertyDependencyRegistration.ItemPropertyDependencyRegistrationDelegates.Count != 0 )
 					return;
 
-				_collectionDependencies.Remove(masterPropertyOwnerCollection);
+				_collectionDependencies.Remove( masterPropertyOwnerCollection );
 				masterPropertyOwnerCollection.CollectionChanged -= OnCollectionChanged;
 			}
 		}
 
-		void IBindableHiddenRegistrationAPI.UnRegisterPropertyDependency(INotifyPropertyChanged masterPropertyOwner, string masterPropertyName, string dependantPropertyName)
+		void IBindableHiddenRegistrationAPI.UnRegisterPropertyDependency( INotifyPropertyChanged masterPropertyOwner, string masterPropertyName, string dependantPropertyName )
 		{
-			EnsurePropertyDependencyDictionaryAcceptsDependantProperties(masterPropertyOwner, masterPropertyName);
+			EnsurePropertyDependencyDictionaryAcceptsDependantProperties( masterPropertyOwner, masterPropertyName );
 
-			if (_propertyDependencies[masterPropertyOwner].PropertyDependencies[masterPropertyName].DependentProperties.Contains(dependantPropertyName))
+			if ( _propertyDependencies[masterPropertyOwner].PropertyDependencies[masterPropertyName].DependentProperties.Contains( dependantPropertyName ) )
 			{
-				_propertyDependencies[masterPropertyOwner].PropertyDependencies[masterPropertyName].DependentProperties.Remove(dependantPropertyName);
+				_propertyDependencies[masterPropertyOwner].PropertyDependencies[masterPropertyName].DependentProperties.Remove( dependantPropertyName );
 
-				if (_propertyDependencies[masterPropertyOwner].PropertyDependencies[masterPropertyName].DependentProperties.Count == 0 &&
-					_propertyDependencies[masterPropertyOwner].PropertyDependencies[masterPropertyName].Callbacks.Count == 0)
+				if ( _propertyDependencies[masterPropertyOwner].PropertyDependencies[masterPropertyName].DependentProperties.Count == 0 &&
+					_propertyDependencies[masterPropertyOwner].PropertyDependencies[masterPropertyName].Callbacks.Count == 0 )
 				{
-					_propertyDependencies[masterPropertyOwner].PropertyDependencies.Remove(masterPropertyName);
+					_propertyDependencies[masterPropertyOwner].PropertyDependencies.Remove( masterPropertyName );
 
-					if (_propertyDependencies[masterPropertyOwner].PropertyDependencies.Count == 0 &&
-						_propertyDependencies[masterPropertyOwner].Callbacks.Count == 0)
+					if ( _propertyDependencies[masterPropertyOwner].PropertyDependencies.Count == 0 &&
+						_propertyDependencies[masterPropertyOwner].Callbacks.Count == 0 )
 					{
-						_propertyDependencies.Remove(masterPropertyOwner);
+						_propertyDependencies.Remove( masterPropertyOwner );
 						masterPropertyOwner.PropertyChanged -= OnPropertyOfDependencyChanged;
-						if (masterPropertyOwner is IDependencyFrameworkNotifyPropertyChangedInTransaction)
+						if ( masterPropertyOwner is IDependencyFrameworkNotifyPropertyChangedInTransaction )
 						{
-							((IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner).PropertyChangedInTransaction -= OnPropertyOfDependencyChangedInTransaction;
+							( (IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner ).PropertyChangedInTransaction -= OnPropertyOfDependencyChangedInTransaction;
+
+						}
+						if ( masterPropertyOwner is BindableBase )
+						{
+							_registrationIdHashSet.Remove( ((BindableBase)masterPropertyOwner).RegistrationId );
 						}
 					}
 				}
@@ -509,27 +575,27 @@ namespace PropertyDependencyFramework
 
 		#region Helpers
 
-		protected internal void EnsurePropertyDependencyDictionaryAcceptsDependantProperties(INotifyPropertyChanged masterPropertyOwner, string masterPropertyName)
+		protected internal void EnsurePropertyDependencyDictionaryAcceptsDependantProperties( INotifyPropertyChanged masterPropertyOwner, string masterPropertyName )
 		{
-			EnsurePropertyDependencyDictionaryContainsMasterObject(masterPropertyOwner);
+			EnsurePropertyDependencyDictionaryContainsMasterObject( masterPropertyOwner );
 
-			if (!_propertyDependencies[masterPropertyOwner].PropertyDependencies.ContainsKey(masterPropertyName))
+			if ( !_propertyDependencies[masterPropertyOwner].PropertyDependencies.ContainsKey( masterPropertyName ) )
 			{
 #if DEBUG
-				if (ArePropertyDependencySanityChecksEnabled)
+				if ( ArePropertyDependencySanityChecksEnabled )
 				{
-					EnsureObjectExposesProperty(masterPropertyOwner, masterPropertyName);
+					EnsureObjectExposesProperty( masterPropertyOwner, masterPropertyName );
 				}
 #endif
-				_propertyDependencies[masterPropertyOwner].PropertyDependencies.Add(masterPropertyName, new PropertyDependencies());
+				_propertyDependencies[masterPropertyOwner].PropertyDependencies.Add( masterPropertyName, new PropertyDependencies() );
 			}
 		}
 
-		protected internal void EnsurePropertyDependencyDictionaryContainsMasterObject(INotifyPropertyChanged masterPropertyOwner)
+		protected internal void EnsurePropertyDependencyDictionaryContainsMasterObject( INotifyPropertyChanged masterPropertyOwner )
 		{
-			if (!_propertyDependencies.ContainsKey(masterPropertyOwner))
+			if ( !_propertyDependencies.ContainsKey( masterPropertyOwner ) )
 			{
-				_propertyDependencies.Add(masterPropertyOwner, new ObjectPropertyDependencyRegistration());
+				_propertyDependencies.Add( masterPropertyOwner, new ObjectPropertyDependencyRegistration() );
 			}
 		}
 
@@ -539,93 +605,97 @@ namespace PropertyDependencyFramework
 
 		#region Property Change Framework Implementation
 
-		protected void NotifyPropertyChanged<T>(Expression<Func<T>> propertyExpression)
+		protected void NotifyPropertyChanged<T>( Expression<Func<T>> propertyExpression )
 		{
-			NotifyPropertyChanged(PropertyNameResolver.GetPropertyName(propertyExpression));
+			NotifyPropertyChanged( PropertyNameResolver.GetPropertyName( propertyExpression ) );
 		}
 
-		protected void NotifyPropertyChanged(string propertyName)
+		protected void NotifyPropertyChanged( string propertyName )
 		{
-			if (UseSmartPropertyChangeNotificationByDefault)
+			if ( UseSmartPropertyChangeNotificationByDefault )
 			{
-				if (DependencyFrameworkNotifyPropertyChangedScope.AreSourcePropertyChangesQueuedForDeferredExecution)
+				if ( DependencyFrameworkNotifyPropertyChangedScope.AreSourcePropertyChangesQueuedForDeferredExecution )
 				{
-					DependencyFrameworkNotifyPropertyChangedScope.Current.DeferSourcePropertyChangeForDeferredExecution(this, propertyName);
+					DependencyFrameworkNotifyPropertyChangedScope.Current.DeferSourcePropertyChangeForDeferredExecution( this, propertyName );
 				}
 				else
 				{
-					using (new DependencyFrameworkNotifyPropertyChangedScope())
+					using ( new DependencyFrameworkNotifyPropertyChangedScope() )
 					{
-						OnPropertyChanged(propertyName);
+						OnPropertyChanged( propertyName );
 					}
 				}
 			}
 			else
 			{
-				OnPropertyChanged(propertyName);
+				OnPropertyChanged( propertyName );
 			}
 		}
 
-		private void OnPropertyChanged(string propertyName)
+		private void OnPropertyChanged( string propertyName )
 		{
-			lock (_cachedPropertyValues)
+			lock ( _cachedPropertyValues )
 			{
-				if (_cachedPropertyValues.ContainsKey(propertyName))
-					_cachedPropertyValues.Remove(propertyName);
+				if ( _cachedPropertyValues.ContainsKey( propertyName ) )
+					_cachedPropertyValues.Remove( propertyName );
 			}
 
 
-			if (DependencyFrameworkNotifyPropertyChangedScope.ArePropertyChangesCollected)
+			if ( DependencyFrameworkNotifyPropertyChangedScope.ArePropertyChangesCollected )
 			{
-				if (!DependencyFrameworkNotifyPropertyChangedScope.Current.IsPropertyChangedQueued(this, propertyName))
+				if ( !DependencyFrameworkNotifyPropertyChangedScope.Current.IsPropertyChangedQueued( this, propertyName ) )
 				{
-					DependencyFrameworkNotifyPropertyChangedScope.Current.QueuePropertyChange(this, propertyName);
+					DependencyFrameworkNotifyPropertyChangedScope.Current.QueuePropertyChange( this, propertyName );
 
-					if (PropertyChangedInTransaction != null)
-						PropertyChangedInTransaction(this, new PropertyChangedEventArgs(propertyName));
+					if ( PropertyChangedInTransaction != null )
+						PropertyChangedInTransaction( this, new PropertyChangedEventArgs( propertyName ) );
 				}
 			}
 			else
 			{
 				PropertyChangedEventHandler handler = PropertyChanged;
-				if (handler != null)
+				if ( handler != null )
 				{
-					handler(this, new PropertyChangedEventArgs(propertyName));
+					handler( this, new PropertyChangedEventArgs( propertyName ) );
 				}
 			}
 
-			if (this is IBindableExtensionHook)
-				((IBindableExtensionHook)this).AfterOnPropertyChanged(propertyName);
+			if ( this is IBindableExtensionHook )
+				((IBindableExtensionHook)this).AfterOnPropertyChanged( propertyName );
 		}
-		
-		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+
+		void OnCollectionChanged( object sender, NotifyCollectionChangedEventArgs e )
 		{
 			INotifyCollectionChanged collection = (INotifyCollectionChanged)sender;
 			var propertyDependencyRegistration = _collectionDependencies[collection];
 
 			bool raisePropertyChanges = false;
 
-			switch (e.Action)
+			switch ( e.Action )
 			{
 				case NotifyCollectionChangedAction.Add:
-					foreach (object newItem in e.NewItems)
+					foreach ( object newItem in e.NewItems )
 					{
-						foreach (Action<object> registrationDelegate in propertyDependencyRegistration.ItemPropertyDependencyRegistrationDelegates.Values)
-							registrationDelegate(newItem);
+						foreach ( Action<object> registrationDelegate in propertyDependencyRegistration.ItemPropertyDependencyRegistrationDelegates.Values )
+							registrationDelegate( newItem );
 					}
 					raisePropertyChanges = true;
 					break;
 				case NotifyCollectionChangedAction.Remove:
-					foreach (INotifyPropertyChanged oldItem in e.OldItems)
+					foreach ( INotifyPropertyChanged oldItem in e.OldItems )
 					{
 						oldItem.PropertyChanged -= OnPropertyOfDependencyChanged;
 
-						if (oldItem is IDependencyFrameworkNotifyPropertyChangedInTransaction)
+						if ( oldItem is IDependencyFrameworkNotifyPropertyChangedInTransaction )
 						{
-							((IDependencyFrameworkNotifyPropertyChangedInTransaction)oldItem).PropertyChangedInTransaction -= OnPropertyOfDependencyChangedInTransaction;
+							( (IDependencyFrameworkNotifyPropertyChangedInTransaction)oldItem ).PropertyChangedInTransaction -= OnPropertyOfDependencyChangedInTransaction;
 						}
 
-						_propertyDependencies.Remove(oldItem);
+						_propertyDependencies.Remove( oldItem );
+						if ( oldItem is BindableBase )
+						{
+							_registrationIdHashSet.Remove( ((BindableBase)oldItem).RegistrationId );
+						}
 					}
 					raisePropertyChanges = true;
 					break;
@@ -634,59 +704,61 @@ namespace PropertyDependencyFramework
 					break;
 			}
 
-			if (raisePropertyChanges)
+			if ( raisePropertyChanges )
 			{
-				foreach (string property in propertyDependencyRegistration.DependentProperties)
+				foreach ( string property in propertyDependencyRegistration.DependentProperties )
 				{
-					OnPropertyChanged(property);
+					OnPropertyChanged( property );
 				}
 
-			    if (DependencyFrameworkNotifyPropertyChangedScope.ArePropertyChangesCollected)
-			    {
-                    foreach (CallbackContainer callback in propertyDependencyRegistration.Callbacks)
-                        DependencyFrameworkNotifyPropertyChangedScope.Current.QueueCollectionCallback(callback);
-			    }
-                else
-			    {
-			        foreach (CallbackContainer callback in propertyDependencyRegistration.Callbacks)
-			            callback.Call();
-			    }
+				if ( DependencyFrameworkNotifyPropertyChangedScope.ArePropertyChangesCollected )
+				{
+					foreach ( CallbackContainer callback in propertyDependencyRegistration.Callbacks )
+						DependencyFrameworkNotifyPropertyChangedScope.Current.QueueCollectionCallback( callback );
+				}
+				else
+				{
+					foreach ( CallbackContainer callback in propertyDependencyRegistration.Callbacks )
+						callback.Call();
+				}
 			}
 		}
 
-		protected internal void OnPropertyOfDependencyChanged(object propertyOwner, PropertyChangedEventArgs args)
+		protected internal void OnPropertyOfDependencyChanged( object propertyOwner, PropertyChangedEventArgs args )
 		{
 			var masterPropertyOwner = (INotifyPropertyChanged)propertyOwner;
-			if (!_propertyDependencies.ContainsKey(masterPropertyOwner))
+			if ( !_propertyDependencies.ContainsKey( masterPropertyOwner ) )
 				return;
 
-			foreach (CallbackContainer callback in _propertyDependencies[masterPropertyOwner].Callbacks)
+			foreach ( CallbackContainer callback in _propertyDependencies[masterPropertyOwner].Callbacks )
 				callback.Call();
 
-			if (!_propertyDependencies[masterPropertyOwner].PropertyDependencies.ContainsKey(args.PropertyName))
+			if ( !_propertyDependencies[masterPropertyOwner].PropertyDependencies.ContainsKey( args.PropertyName ) )
 				return;
 
-			if (DependencyFrameworkNotifyPropertyChangedScope.IsPropertyChangeConcatenationEnabled)
+			if ( DependencyFrameworkNotifyPropertyChangedScope.IsPropertyChangeConcatenationEnabled )
 			{
-				foreach (string dependantProperty in _propertyDependencies[masterPropertyOwner].PropertyDependencies[args.PropertyName].DependentProperties)
-					OnPropertyChanged(dependantProperty);
+				var dependentProperties = _propertyDependencies[masterPropertyOwner].PropertyDependencies[args.PropertyName].DependentProperties.ToArray();
+				foreach ( string dependantProperty in dependentProperties )
+					OnPropertyChanged( dependantProperty );
 			}
 
-			foreach (CallbackContainer callback in _propertyDependencies[masterPropertyOwner].PropertyDependencies[args.PropertyName].Callbacks)
+			foreach ( CallbackContainer callback in _propertyDependencies[masterPropertyOwner].PropertyDependencies[args.PropertyName].Callbacks )
 				callback.Call();
 		}
 
-		protected internal void OnPropertyOfDependencyChangedInTransaction(object propertyOwner, PropertyChangedEventArgs args)
+		protected internal void OnPropertyOfDependencyChangedInTransaction( object propertyOwner, PropertyChangedEventArgs args )
 		{
 			var masterPropertyOwner = (INotifyPropertyChanged)propertyOwner;
-			if (!_propertyDependencies.ContainsKey(masterPropertyOwner))
+			if ( !_propertyDependencies.ContainsKey( masterPropertyOwner ) )
 				return;
 
-			if (!_propertyDependencies[masterPropertyOwner].PropertyDependencies.ContainsKey(args.PropertyName))
+			if ( !_propertyDependencies[masterPropertyOwner].PropertyDependencies.ContainsKey( args.PropertyName ) )
 				return;
 
-			foreach (string dependantProperty in _propertyDependencies[masterPropertyOwner].PropertyDependencies[args.PropertyName].DependentProperties)
-				OnPropertyChanged(dependantProperty);
+			var dependentProperties = _propertyDependencies[masterPropertyOwner].PropertyDependencies[args.PropertyName].DependentProperties;
+			foreach ( string dependantProperty in dependentProperties )
+				OnPropertyChanged( dependantProperty );
 		}
 
 		#endregion
@@ -694,18 +766,18 @@ namespace PropertyDependencyFramework
 		#region Cache Implementation
 
 		Dictionary<string, object> _cachedPropertyValues = new Dictionary<string, object>();
-		protected T CachedValue<T>(Expression<Func<T>> ofProperty, Func<T> propertyEvaluation)
+		protected T CachedValue<T>( Expression<Func<T>> ofProperty, Func<T> propertyEvaluation )
 		{
-			string propertyName = PropertyNameResolver.GetPropertyName(ofProperty);
+			string propertyName = PropertyNameResolver.GetPropertyName( ofProperty );
 
-			if (this is IBindableExtensionHook)
-				((IBindableExtensionHook) this).BeforeCachedValue(propertyName);
+			if ( this is IBindableExtensionHook )
+				((IBindableExtensionHook)this).BeforeCachedValue( propertyName );
 
-			lock (_cachedPropertyValues)
+			lock ( _cachedPropertyValues )
 			{
-				if (!_cachedPropertyValues.ContainsKey(propertyName))
+				if ( !_cachedPropertyValues.ContainsKey( propertyName ) )
 				{
-					_cachedPropertyValues.Add(propertyName, propertyEvaluation());
+					_cachedPropertyValues.Add( propertyName, propertyEvaluation() );
 				}
 
 				return (T)_cachedPropertyValues[propertyName];
@@ -727,17 +799,17 @@ namespace PropertyDependencyFramework
 		#endregion
 
 		#region Sanity Checks
-		private void EnsureObjectExposesProperty(object obj, string propertyName)
+		private void EnsureObjectExposesProperty( object obj, string propertyName )
 		{
-			if (!obj.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Any(k => k.Name == propertyName))
-				throw new InvalidOperationException("Object of Type " + obj.GetType() + " does not expose property " + propertyName);
+			if ( !obj.GetType().GetProperties( BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic ).Any( k => k.Name == propertyName ) )
+				throw new InvalidOperationException( "Object of Type " + obj.GetType() + " does not expose property " + propertyName );
 		}
 		#endregion
 
 		#region Hidden Raise Property Change API
-		void IBindableHiddenBaseAPI.OnPropertyChanged(string propertyName)
+		void IBindableHiddenBaseAPI.OnPropertyChanged( string propertyName )
 		{
-			OnPropertyChanged(propertyName);
+			OnPropertyChanged( propertyName );
 		}
 		#endregion
 
@@ -753,57 +825,57 @@ namespace PropertyDependencyFramework
 			return GetPropertyChangedInvocationList();
 		}
 
-		void IBindableBaseAccessToProtectedFunctionality.TunnelledNotifyPropertyChanged(string propertyName)
+		void IBindableBaseAccessToProtectedFunctionality.TunnelledNotifyPropertyChanged( string propertyName )
 		{
-			NotifyPropertyChanged(propertyName);
+			NotifyPropertyChanged( propertyName );
 		}
 
-		T IBindableBaseAccessToProtectedFunctionality.TunnelledCachedValue<T>(Expression<Func<T>> ofProperty,
-		                                                                      Func<T> propertyEvaluation)
+		T IBindableBaseAccessToProtectedFunctionality.TunnelledCachedValue<T>( Expression<Func<T>> ofProperty,
+																			  Func<T> propertyEvaluation )
 		{
-			return CachedValue(ofProperty, propertyEvaluation);
+			return CachedValue( ofProperty, propertyEvaluation );
 		}
 
-		void IBindableBaseAccessToProtectedFunctionality.TunnelledRegisterPropertyDependency<T, T1, T2>(T masterPropertyOwner, Expression<Func<T, T1>> masterProperty,
-		                                                                                            Expression<Func<T2>> dependentProperty)
+		void IBindableBaseAccessToProtectedFunctionality.TunnelledRegisterPropertyDependency<T, T1, T2>( T masterPropertyOwner, Expression<Func<T, T1>> masterProperty,
+																									Expression<Func<T2>> dependentProperty )
 		{
-			RegisterPropertyDependency(masterPropertyOwner, masterProperty, dependentProperty);
+			RegisterPropertyDependency( masterPropertyOwner, masterProperty, dependentProperty );
 		}
 
 		void IBindableBaseAccessToProtectedFunctionality.TunnelledRegisterPropertyDependency<T, T1, T2>(
 			DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection, Expression<Func<T, T1>> masterProperty,
-			Expression<Func<T2>> dependentProperty)
+			Expression<Func<T2>> dependentProperty )
 		{
-			RegisterPropertyDependency(masterPropertyOwnerCollection,
-			                           masterProperty,
-			                           dependentProperty);
+			RegisterPropertyDependency( masterPropertyOwnerCollection,
+									   masterProperty,
+									   dependentProperty );
 		}
 
-		void IBindableBaseAccessToProtectedFunctionality.TunnelledRegisterCallbackDependency<T>(T masterPropertyOwner, Action callback)
+		void IBindableBaseAccessToProtectedFunctionality.TunnelledRegisterCallbackDependency<T>( T masterPropertyOwner, Action callback )
 		{
-			RegisterCallbackDependency(masterPropertyOwner, callback);
+			RegisterCallbackDependency( masterPropertyOwner, callback );
 		}
 
-		void IBindableBaseAccessToProtectedFunctionality.TunnelledRegisterCallbackDependency<T, T1>(T masterPropertyOwner, Expression<Func<T, T1>> masterProperty, Action callback)
+		void IBindableBaseAccessToProtectedFunctionality.TunnelledRegisterCallbackDependency<T, T1>( T masterPropertyOwner, Expression<Func<T, T1>> masterProperty, Action callback )
 		{
-			RegisterCallbackDependency(masterPropertyOwner, masterProperty, callback);
+			RegisterCallbackDependency( masterPropertyOwner, masterProperty, callback );
 		}
 
-		void IBindableBaseAccessToProtectedFunctionality.TunnelledRegisterCallbackDependency<T, T1>(T[] masterPropertyOwners, Expression<Func<T, T1>> masterProperty, Action callback)
+		void IBindableBaseAccessToProtectedFunctionality.TunnelledRegisterCallbackDependency<T, T1>( T[] masterPropertyOwners, Expression<Func<T, T1>> masterProperty, Action callback )
 		{
-			RegisterCallbackDependency(masterPropertyOwners, masterProperty, callback);
+			RegisterCallbackDependency( masterPropertyOwners, masterProperty, callback );
 		}
 
-		void IBindableBaseAccessToProtectedFunctionality.TunnelledRegisterCallbackDependency<T>(DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection,
-		                                                                                    Action callback)
+		void IBindableBaseAccessToProtectedFunctionality.TunnelledRegisterCallbackDependency<T>( DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection,
+																							Action callback )
 		{
-			RegisterCallbackDependency(masterPropertyOwnerCollection, callback);
+			RegisterCallbackDependency( masterPropertyOwnerCollection, callback );
 		}
 
-		void IBindableBaseAccessToProtectedFunctionality.TunnelledRegisterCallbackDependency<T, T1>(DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection,
-		                                                                                        Expression<Func<T, T1>> masterProperty, Action callback)
+		void IBindableBaseAccessToProtectedFunctionality.TunnelledRegisterCallbackDependency<T, T1>( DependencyFrameworkObservableCollection<T> masterPropertyOwnerCollection,
+																								Expression<Func<T, T1>> masterProperty, Action callback )
 		{
-			RegisterCallbackDependency(masterPropertyOwnerCollection, masterProperty, callback);
+			RegisterCallbackDependency( masterPropertyOwnerCollection, masterProperty, callback );
 		}
 
 		void IBindableBaseAccessToProtectedFunctionality.TunnelledUnregisterAllPropertyDependencies()
@@ -811,16 +883,16 @@ namespace PropertyDependencyFramework
 			UnregisterAllPropertyDependencies();
 		}
 
-		void IBindableBaseAccessToProtectedFunctionality.TunnelledUnRegisterPropertyDependency(INotifyCollectionChanged masterPropertyOwnerCollection,
-		                                                                                   string masterPropertyName, string dependantPropertyName)
+		void IBindableBaseAccessToProtectedFunctionality.TunnelledUnRegisterPropertyDependency( INotifyCollectionChanged masterPropertyOwnerCollection,
+																						   string masterPropertyName, string dependantPropertyName )
 		{
-			UnRegisterPropertyDependency(masterPropertyOwnerCollection, masterPropertyName, dependantPropertyName);
+			UnRegisterPropertyDependency( masterPropertyOwnerCollection, masterPropertyName, dependantPropertyName );
 		}
 
-		void IBindableBaseAccessToProtectedFunctionality.TunnelledUnRegisterPropertyDependency(INotifyPropertyChanged masterPropertyOwner, string masterPropertyName,
-		                                                                                   string dependantPropertyName)
+		void IBindableBaseAccessToProtectedFunctionality.TunnelledUnRegisterPropertyDependency( INotifyPropertyChanged masterPropertyOwner, string masterPropertyName,
+																						   string dependantPropertyName )
 		{
-			UnRegisterPropertyDependency(masterPropertyOwner, masterPropertyName, dependantPropertyName);
+			UnRegisterPropertyDependency( masterPropertyOwner, masterPropertyName, dependantPropertyName );
 		}
 
 		#endregion

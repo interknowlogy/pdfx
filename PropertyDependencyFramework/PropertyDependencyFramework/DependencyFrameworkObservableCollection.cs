@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -73,6 +74,29 @@ namespace PropertyDependencyFramework
 			{
 				base.OnCollectionChanged(e);
 			}
+		}
+		protected override void ClearItems()
+		{
+			Action replaceWork = () =>
+			{
+				while ( Count > 0 )
+				{
+					RemoveAt( 0 );
+				}
+			};
+			if ( _openNewScopeOnCollectionChanged )
+			{
+				if ( DependencyFrameworkNotifyPropertyChangedScope.ArePropertyChangesCollected == false &&
+					 DependencyFrameworkNotifyPropertyChangedScope.AreSourcePropertyChangesQueuedForDeferredExecution == false )
+				{
+					using ( new DependencyFrameworkNotifyPropertyChangedScope() )
+					{
+						replaceWork();
+						return;
+					}
+				}
+			}
+			replaceWork();
 		}
 	}
 }

@@ -7,7 +7,8 @@ namespace PropertyDependencyFramework
 {
 	internal class DependencyFrameworkNotifyPropertyChangedScope : IDisposable
 	{
-		public static DependencyFrameworkNotifyPropertyChangedScope Current { get; set; }
+		private readonly bool _forDeferalOnly;
+		public static DependencyFrameworkNotifyPropertyChangedScope Current { get; private set; }
 		public static bool ArePropertyChangesCollected { get; private set; }
 		public static bool IsPropertyChangeConcatenationEnabled { get; private set; }
 		public static bool AreSourcePropertyChangesQueuedForDeferredExecution { get; private set; }
@@ -66,23 +67,37 @@ namespace PropertyDependencyFramework
 			_deferredSourceCollectionChanges.Add(internalCollectionChangeEvent);
 		}
 
-		public DependencyFrameworkNotifyPropertyChangedScope()
+		public DependencyFrameworkNotifyPropertyChangedScope( bool forDeferalOnly = false )
 		{
 			if (Current != null)
 				throw new InvalidOperationException("NotifyPropertyChangedScope is already open");
 
 			Current = this;
+			_forDeferalOnly = forDeferalOnly;
+			if ( forDeferalOnly )
+			{
+				ArePropertyChangesCollected = false;
+				IsPropertyChangeConcatenationEnabled = false;
+				AreSourcePropertyChangesQueuedForDeferredExecution = true;
+			}
+			else
+			{
 			ArePropertyChangesCollected = true;
 			IsPropertyChangeConcatenationEnabled = true;
+				AreSourcePropertyChangesQueuedForDeferredExecution = false;
+			}
 		}
 
 		public void Dispose()
 		{
 			ArePropertyChangesCollected = false;
+			if ( !_forDeferalOnly )
+			{
 			IsPropertyChangeConcatenationEnabled = false;
 			AreSourcePropertyChangesQueuedForDeferredExecution = true;
 			FireQueuedPropertyChangedArgs();
             FireQueuedCollectionCallbacks();
+			}
 			AreSourcePropertyChangesQueuedForDeferredExecution = false;
 			IsPropertyChangeConcatenationEnabled = true;
 
