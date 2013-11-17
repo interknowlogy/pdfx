@@ -26,13 +26,37 @@ namespace PropertyDependencyFramework
 		public bool ArePropertyDependencySanityChecksEnabled = true;
 
 		protected BindableBase()
+			: this( true )
 		{
-			UseSmartPropertyChangeNotificationByDefault = true;
 		}
 
 		protected BindableBase( bool useSmartPropertyChangeNotificationByDefault )
 		{
 			UseSmartPropertyChangeNotificationByDefault = useSmartPropertyChangeNotificationByDefault;
+
+			InitializePropertyDependencies();
+		}
+
+
+		internal static readonly HashSet<Type> _registeredTypes = new HashSet<Type>();
+		private void InitializePropertyDependencies()
+		{
+			Type currentType = this.GetType();
+
+			if (_registeredTypes.Contains(currentType))
+				return;
+
+			foreach (Action<Type> propertyRegistration in GetPropertyRegistrations())
+			{
+				propertyRegistration(currentType);
+			}
+
+			_registeredTypes.Add(currentType);
+		}
+
+		protected virtual Action<Type>[] GetPropertyRegistrations()
+		{
+			throw new NotImplementedException();
 		}
 
 		#region Private Fields
@@ -519,7 +543,7 @@ namespace PropertyDependencyFramework
 				{
 					_propertyDependencies[masterPropertyOwner].PropertyDependencies.Remove( masterPropertyName );
 
-					UnsubscribeFromMasterPropertyOwner(masterPropertyOwner);
+					UnsubscribeFromMasterPropertyOwner( masterPropertyOwner );
 				}
 			}
 		}
@@ -552,21 +576,21 @@ namespace PropertyDependencyFramework
 			}
 		}
 
-		private void UnsubscribeFromMasterPropertyOwner(INotifyPropertyChanged masterPropertyOwner)
+		private void UnsubscribeFromMasterPropertyOwner( INotifyPropertyChanged masterPropertyOwner )
 		{
-			if (_propertyDependencies[masterPropertyOwner].PropertyDependencies.Count == 0 &&
-			    _propertyDependencies[masterPropertyOwner].Callbacks.Count == 0)
+			if ( _propertyDependencies[masterPropertyOwner].PropertyDependencies.Count == 0 &&
+				_propertyDependencies[masterPropertyOwner].Callbacks.Count == 0 )
 			{
-				_propertyDependencies.Remove(masterPropertyOwner);
+				_propertyDependencies.Remove( masterPropertyOwner );
 				masterPropertyOwner.PropertyChanged -= OnPropertyOfDependencyChanged;
-				if (masterPropertyOwner is IDependencyFrameworkNotifyPropertyChangedInTransaction)
+				if ( masterPropertyOwner is IDependencyFrameworkNotifyPropertyChangedInTransaction )
 				{
-					((IDependencyFrameworkNotifyPropertyChangedInTransaction) masterPropertyOwner).PropertyChangedInTransaction -=
+					((IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner).PropertyChangedInTransaction -=
 						OnPropertyOfDependencyChangedInTransaction;
 				}
-				if (masterPropertyOwner is BindableBase)
+				if ( masterPropertyOwner is BindableBase )
 				{
-					_registrationIdHashSet.Remove(((BindableBase) masterPropertyOwner).RegistrationId);
+					_registrationIdHashSet.Remove( ((BindableBase)masterPropertyOwner).RegistrationId );
 				}
 			}
 		}
@@ -688,7 +712,7 @@ namespace PropertyDependencyFramework
 
 						if ( oldItem is IDependencyFrameworkNotifyPropertyChangedInTransaction )
 						{
-							( (IDependencyFrameworkNotifyPropertyChangedInTransaction)oldItem ).PropertyChangedInTransaction -= OnPropertyOfDependencyChangedInTransaction;
+							((IDependencyFrameworkNotifyPropertyChangedInTransaction)oldItem).PropertyChangedInTransaction -= OnPropertyOfDependencyChangedInTransaction;
 						}
 
 						_propertyDependencies.Remove( oldItem );

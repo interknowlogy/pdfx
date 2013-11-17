@@ -29,6 +29,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("1.0.1.0")]
 [assembly: AssemblyFileVersion("1.0.1.0")]
 
+[assembly: InternalsVisibleTo("PropertyDependencyFramework_Tests")]
 [assembly: InternalsVisibleTo("PropertyDependencyFramework_WPF")]
 [assembly: InternalsVisibleTo("PropertyDependencyFramework_Silverlight")]
 [assembly: InternalsVisibleTo("PropertyDependencyFramework_WindowsStore")]
