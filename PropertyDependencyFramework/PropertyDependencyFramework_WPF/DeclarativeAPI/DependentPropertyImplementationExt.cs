@@ -198,9 +198,10 @@ namespace PropertyDependencyFramework.DeclarativeAPI
             _propertyRegistrationApi = propertyRegistrationApi;
         }
 
-        public IPropertyDependencyForTypeExt OnImmutableSource<TProperty>(Expression<Func<TProperty>> property)
+        public IPropertyDependencyForTypeExt OnImmutableSource<TSource, TProperty>(Expression<Func<TSource>> source, Expression<Func<TProperty>> property)
+                   where TSource : INotifyPropertyChanged
         {
-            throw new NotImplementedException();
+            return ThisDependsOn(source, property);
         }
 
         public IDependentPropertyForTypeExt Depends(Action<IPropertyDependencyForTypeExt> deferredPropDependency)
@@ -208,7 +209,8 @@ namespace PropertyDependencyFramework.DeclarativeAPI
             throw new NotImplementedException();
         }
 
-        IPropertyDependencyForTypeExt ThisDependsOn<TOwner>(LambdaExpression source, LambdaExpression sourceProperty) where TOwner : INotifyPropertyChanged
+        IPropertyDependencyForTypeExt ThisDependsOn<TSource, TSourceProp>(Expression<Func<TSource>> source, Expression<Func<TSourceProp>> sourceProperty)
+            where TSource : INotifyPropertyChanged 
         {
             _propertyRegistrationApi.RegisterPropertyDependencyForType(source, sourceProperty, _dependentPropertyName, _dependentType);
 

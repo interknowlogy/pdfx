@@ -930,14 +930,18 @@ namespace PropertyDependencyFramework
         }
 
         private readonly Dictionary<Type, TypeDependencies> _dependenciesByType = new Dictionary<Type, TypeDependencies>();
-        protected void RegisterPropertyDependencyForType<TSource, TSourceProp>(Expression<TSource> source, Expression<TSourceProp> sourceProp,
+        protected void RegisterPropertyDependencyForType<TSource, TSourceProp>(Expression<Func<TSource>> source, Expression<Func<TSourceProp>> sourceProp,
                                                                        string dependentPropName, Type dependentType)
         {
             HiddenRegistrationAPI.RegisterPropertyDependencyForType(source, sourceProp, dependentPropName, dependentType);
         }
-        void IBindableHiddenRegistrationAPI.RegisterPropertyDependencyForType(Expression source, Expression sourceProp,
+        void IBindableHiddenRegistrationAPI.RegisterPropertyDependencyForType<TSource, TSourceProp>(Expression<Func<TSource>> source, Expression<Func<TSourceProp>> sourceProp,
                                                                              string dependentPropName, Type dependentType)
         {
+
+            var sourceProperty = new SourceProperty();
+            sourceProperty.Property = sourceProp.Compile;
+
             //Can't compile or get name of Expression that is not of <T>
             _dependenciesByType[dependentType].Sources[source.Name]
                 .SourceProperties[sourceProp.Name].DependentProperties.Add(dependentPropName);
@@ -962,13 +966,13 @@ namespace PropertyDependencyFramework
 
     public class SourceProvider
     {
-        public Expression/*<TSource>*/ Source { get; private set; }
+        public Func<object>/*<TSource>*/ Source { get; private set; }
         public Dictionary<string, SourceProperty> SourceProperties { get; private set; }
     }
 
     public class SourceProperty
     {
-        public Expression/*<TSourceProperty>*/ Property { get; set; }
+        public Func<object>/*<TSourceProperty>*/ Property { get; set; }
         public List<string> DependentProperties { get; private set; }
     }
 }

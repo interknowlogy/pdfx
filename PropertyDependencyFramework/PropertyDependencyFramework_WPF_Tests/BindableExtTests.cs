@@ -967,7 +967,7 @@ namespace PropertyDependencyFramework_Tests
         private void RegisterDependentProp()
         {
             TypeProperty(() => DependentProp)
-                .Depends(p => p.OnImmutableSource(() => InputProp));
+                .Depends(p => p.OnImmutableSource(()=>this, () => InputProp));
         }
         public decimal DependentProp
         {

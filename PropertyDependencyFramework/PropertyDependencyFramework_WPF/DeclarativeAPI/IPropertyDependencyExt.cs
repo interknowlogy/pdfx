@@ -94,6 +94,7 @@ where TOwner : INotifyPropertyChanged;
 
     public interface IPropertyDependencyForTypeExt
     {
-        IPropertyDependencyForTypeExt OnImmutableSource<TProperty>(Expression<Func<TProperty>> property);
+        IPropertyDependencyForTypeExt OnImmutableSource<TSource, TProperty>(Expression<Func<TSource>> source, Expression<Func<TProperty>> property)
+            where TSource: INotifyPropertyChanged;
     }
 }
