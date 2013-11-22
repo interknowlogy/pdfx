@@ -91,4 +91,9 @@ where TOwner : INotifyPropertyChanged;
 			Expression<Func<INotifyCollectionChanged>> collectionPropertyGetter,
 			Expression<Func<TCollectionType, TCollectionItemPropertyType>> collectionChildProperty) where TCollectionType : INotifyPropertyChanged;
 	}
+
+    public interface IPropertyDependencyForTypeExt
+    {
+        IPropertyDependencyForTypeExt OnImmutableSource<TProperty>(Expression<Func<TProperty>> property);
+    }
 }

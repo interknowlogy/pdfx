@@ -6,4 +6,9 @@ namespace PropertyDependencyFramework.DeclarativeAPI
 	{
 		IDependentPropertyExt Depends(Action<IPropertyDependencyExt> deferredPropDependency);
 	}
+
+    public interface IDependentPropertyForTypeExt
+    {
+        IDependentPropertyForTypeExt Depends(Action<IPropertyDependencyForTypeExt> deferredPropDependency);
+    }
 }

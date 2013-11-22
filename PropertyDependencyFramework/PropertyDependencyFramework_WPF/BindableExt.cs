@@ -274,25 +274,45 @@ namespace PropertyDependencyFramework
 
 		#region Declarative Property Dependency Registration API
 		internal Dictionary<string, DependentPropertyImplementationExt> _properties = new Dictionary<string, DependentPropertyImplementationExt>();
-		protected IDependentPropertyExt Property<T>(Expression<Func<T>> property)
-		{
-			string dependantPropertyName = PropertyNameResolver.GetPropertyName(property);
+        protected IDependentPropertyExt Property<T>(Expression<Func<T>> property)
+        {
+            string dependantPropertyName = PropertyNameResolver.GetPropertyName(property);
 
 #if DEBUG
-			if (ArePropertyDependencySanityChecksEnabled)
-			{
-				PerformSanityChecksOnRequestedDeclarativePropertyRegistration(dependantPropertyName);
-			}
+            if (ArePropertyDependencySanityChecksEnabled)
+            {
+                PerformSanityChecksOnRequestedDeclarativePropertyRegistration(dependantPropertyName);
+            }
 #endif
 
-			if (_properties.ContainsKey(dependantPropertyName) == false)
-			{
-				_properties.Add(dependantPropertyName, new DependentPropertyImplementationExt(dependantPropertyName, this));
-			}
+            if (_properties.ContainsKey(dependantPropertyName) == false)
+            {
+                _properties.Add(dependantPropertyName, new DependentPropertyImplementationExt(dependantPropertyName, this));
+            }
 
-			return _properties[dependantPropertyName];
-		}
-		#endregion
+            return _properties[dependantPropertyName];
+        }
+
+        internal static Dictionary<string, DependentPropertyImplementationForTypeExt> _typeProperties = new Dictionary<string, DependentPropertyImplementationForTypeExt>();
+        protected IDependentPropertyForTypeExt TypeProperty<T>(Expression<Func<T>> property)
+        {
+            string dependantPropertyName = PropertyNameResolver.GetPropertyName(property);
+
+#if DEBUG
+            if (ArePropertyDependencySanityChecksEnabled)
+            {
+                PerformSanityChecksOnRequestedDeclarativePropertyRegistration(dependantPropertyName);
+            }
+#endif
+
+            if (_properties.ContainsKey(dependantPropertyName) == false)
+            {
+                _typeProperties.Add(dependantPropertyName, new DependentPropertyImplementationForTypeExt(dependantPropertyName, this, this.GetType()));
+            }
+
+            return _typeProperties[dependantPropertyName];
+        }
+        #endregion
 
 		#region Property Change Framework Implementation
 
