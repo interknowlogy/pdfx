@@ -904,6 +904,55 @@ namespace PropertyDependencyFramework
 
 
 
+
+
+
+
+
+
+
+        #region Declarative Property Dependency Registration API
+        internal static Dictionary<Type, Dictionary<string, DependentPropertyTypeRegistrationImplementation>> _typeRegistrationProperties = new Dictionary<Type, Dictionary<string, DependentPropertyTypeRegistrationImplementation>>();
+        internal static ITypeRegistrationAPI _typeRegistrationApi = new TypeRegistrationAPI();
+        protected static IDependentPropertyTypeRegistration TypeRegistrationProperty<T>(Type dependentType, Expression<Func<T>> dependentProperty)
+        {
+            string dependantPropertyName = PropertyNameResolver.GetPropertyName(dependentProperty);
+
+            if (!_typeRegistrationProperties.ContainsKey(dependentType))
+            {
+                _typeRegistrationProperties.Add(dependentType,
+                    new Dictionary<string, DependentPropertyTypeRegistrationImplementation>());
+            }
+
+            Dictionary<string, DependentPropertyTypeRegistrationImplementation> dependentTypeProperties = _typeRegistrationProperties[dependentType];
+
+            if (!dependentTypeProperties.ContainsKey(dependantPropertyName))
+            {
+                dependentTypeProperties.Add(dependantPropertyName, new DependentPropertyTypeRegistrationImplementation(dependentType, dependantPropertyName, _typeRegistrationApi));
+            }
+
+            return dependentTypeProperties[dependantPropertyName];
+        }
+        #endregion
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         private static readonly HashSet<Type> _registeredTypes = new HashSet<Type>();
         internal static HashSet<Type> RegisteredTypes { get { return _registeredTypes; }}
 
@@ -926,25 +975,7 @@ namespace PropertyDependencyFramework
 
         private void RegisterPropertyDependenciesForInstance()
         {
-            throw new NotImplementedException();
-        }
-
-        private readonly Dictionary<Type, TypeDependencies> _dependenciesByType = new Dictionary<Type, TypeDependencies>();
-        protected void RegisterPropertyDependencyForType<TSource, TSourceProp>(Expression<Func<TSource>> source, Expression<Func<TSourceProp>> sourceProp,
-                                                                       string dependentPropName, Type dependentType)
-        {
-            HiddenRegistrationAPI.RegisterPropertyDependencyForType(source, sourceProp, dependentPropName, dependentType);
-        }
-        void IBindableHiddenRegistrationAPI.RegisterPropertyDependencyForType<TSource, TSourceProp>(Expression<Func<TSource>> source, Expression<Func<TSourceProp>> sourceProp,
-                                                                             string dependentPropName, Type dependentType)
-        {
-
-            var sourceProperty = new SourceProperty();
-            sourceProperty.Property = sourceProp.Compile;
-
-            //Can't compile or get name of Expression that is not of <T>
-            _dependenciesByType[dependentType].Sources[source.Name]
-                .SourceProperties[sourceProp.Name].DependentProperties.Add(dependentPropName);
+            
         }
 
         protected virtual Action[] GetPropertyRegistrations()
@@ -958,21 +989,32 @@ namespace PropertyDependencyFramework
     {
         public TypeDependencies()
         {
-            Sources = new Dictionary<string, SourceProvider>();
+            SourceProviders = new Dictionary<Type, SourceProvider>();
         }
 
-        public Dictionary<string, SourceProvider> Sources { get; private set; }
+        public Dictionary<Type, SourceProvider> SourceProviders { get; private set; }
     }
 
     public class SourceProvider
     {
-        public Func<object>/*<TSource>*/ Source { get; private set; }
+        public SourceProvider(Func<object, INotifyPropertyChanged> sourceRetrievalFunc)
+        {
+            SourceRetrievalFunc = sourceRetrievalFunc;
+            SourceProperties = new Dictionary<string, SourceProperty>();
+        }
+
+        public Func<object, INotifyPropertyChanged> SourceRetrievalFunc { get; private set; }
         public Dictionary<string, SourceProperty> SourceProperties { get; private set; }
     }
 
     public class SourceProperty
     {
-        public Func<object>/*<TSourceProperty>*/ Property { get; set; }
+        public SourceProperty(string name)
+        {
+            Name = name;
+            DependentProperties = new List<string>();
+        }
+        public string Name { get; private set; }
         public List<string> DependentProperties { get; private set; }
     }
 }

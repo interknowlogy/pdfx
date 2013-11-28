@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using PropertyDependencyFramework;
-
+using PropertyDependencyFramework.DeclarativeAPI;
 #if METRO
 using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
 #else
@@ -23,7 +23,9 @@ namespace PropertyDependencyFramework_Tests
         private const string DefaultNewValue = "ABC";
 
         #region DynamicDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire
-        class DynamicDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass : BindableForUnitTests
+
+        private class DynamicDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass :
+            BindableForUnitTests
         {
             public class ExternalDependency : BindableForUnitTests
             {
@@ -33,10 +35,10 @@ namespace PropertyDependencyFramework_Tests
                 }
 
                 private string _source;
+
                 public string Source
                 {
-                    [DebuggerStepThrough]
-                    get { return _source; }
+                    [DebuggerStepThrough] get { return _source; }
                     set
                     {
                         if (value == _source)
@@ -49,10 +51,10 @@ namespace PropertyDependencyFramework_Tests
             }
 
             private ExternalDependency _externalDependency;
+
             public ExternalDependency Dependency
             {
-                [DebuggerStepThrough]
-                get { return _externalDependency; }
+                [DebuggerStepThrough] get { return _externalDependency; }
                 set
                 {
                     if (value == _externalDependency)
@@ -89,20 +91,25 @@ namespace PropertyDependencyFramework_Tests
         [TestMethod]
         public void DynamicDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire()
         {
-            DynamicDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_Impl(useSmartNotification: true);
-            DynamicDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_Impl(useSmartNotification: false);
+            DynamicDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_Impl(
+                useSmartNotification: true);
+            DynamicDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_Impl(
+                useSmartNotification: false);
         }
 
-        private static void DynamicDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_Impl(bool useSmartNotification)
+        private static void DynamicDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_Impl(
+            bool useSmartNotification)
         {
             var tu = new DynamicDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass();
 
             var recorderTarget1 = CreatePropertyChangeRecorder(tu, k => k.Target);
             var recorderTarget2 = CreatePropertyChangeRecorder(tu, k => k.Target2);
-            tu.Dependency = new DynamicDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ExternalDependency(useSmartNotification)
-            {
-                Source = DefaultNewValue
-            };
+            tu.Dependency =
+                new DynamicDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.
+                    ExternalDependency(useSmartNotification)
+                {
+                    Source = DefaultNewValue
+                };
             Assert.IsTrue(recorderTarget1.HasChanged);
             Assert.AreEqual(1, recorderTarget1.NumberOfChanges);
             Assert.AreEqual(DefaultNewValue, recorderTarget1.NewValues[0]);
@@ -111,20 +118,24 @@ namespace PropertyDependencyFramework_Tests
             Assert.AreEqual(DefaultNewValue.ReverseString(), recorderTarget2.NewValues[0]);
 
             //Swap out dependency
-            tu.Dependency = new DynamicDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ExternalDependency(useSmartNotification)
-            {
-                Source = DefaultNewValue + DefaultNewValue
-            };
+            tu.Dependency =
+                new DynamicDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.
+                    ExternalDependency(useSmartNotification)
+                {
+                    Source = DefaultNewValue + DefaultNewValue
+                };
             Assert.AreEqual(2, recorderTarget1.NumberOfChanges);
             Assert.AreEqual(DefaultNewValue + DefaultNewValue, recorderTarget1.NewValues[1]);
             Assert.AreEqual(2, recorderTarget2.NumberOfChanges);
             Assert.AreEqual((DefaultNewValue + DefaultNewValue).ReverseString(), recorderTarget2.NewValues[1]);
         }
+
         #endregion
 
         #region DynamicDependency_DependencyIsSwappedOut_NoReferencesToTheOldObjectAreKept
 
-        class DynamicDependency_DependencyIsSwappedOut_NoReferencesToTheOldObjectAreKept_TestClass : BindableForUnitTests
+        private class DynamicDependency_DependencyIsSwappedOut_NoReferencesToTheOldObjectAreKept_TestClass :
+            BindableForUnitTests
         {
             public class ExternalDependency : BindableForUnitTests
             {
@@ -134,10 +145,10 @@ namespace PropertyDependencyFramework_Tests
                 }
 
                 private string _source;
+
                 public string Source
                 {
-                    [DebuggerStepThrough]
-                    get { return _source; }
+                    [DebuggerStepThrough] get { return _source; }
                     set
                     {
                         if (value == _source)
@@ -150,10 +161,10 @@ namespace PropertyDependencyFramework_Tests
             }
 
             private ExternalDependency _externalDependency;
+
             public ExternalDependency Dependency
             {
-                [DebuggerStepThrough]
-                get { return _externalDependency; }
+                [DebuggerStepThrough] get { return _externalDependency; }
                 set
                 {
                     if (value == _externalDependency)
@@ -183,15 +194,18 @@ namespace PropertyDependencyFramework_Tests
             DynamicDependency_DependencyIsSwappedOut_NoReferencesToTheOldObjectAreKept_Impl(false);
         }
 
-        private static void DynamicDependency_DependencyIsSwappedOut_NoReferencesToTheOldObjectAreKept_Impl(bool useSmartNotification)
+        private static void DynamicDependency_DependencyIsSwappedOut_NoReferencesToTheOldObjectAreKept_Impl(
+            bool useSmartNotification)
         {
             var tu = new DynamicDependency_DependencyIsSwappedOut_NoReferencesToTheOldObjectAreKept_TestClass();
 
             var recorder = CreatePropertyChangeRecorder(tu, k => k.Target);
-            var originalDependency = new DynamicDependency_DependencyIsSwappedOut_NoReferencesToTheOldObjectAreKept_TestClass.ExternalDependency(useSmartNotification)
-            {
-                Source = DefaultNewValue
-            };
+            var originalDependency =
+                new DynamicDependency_DependencyIsSwappedOut_NoReferencesToTheOldObjectAreKept_TestClass.
+                    ExternalDependency(useSmartNotification)
+                {
+                    Source = DefaultNewValue
+                };
             tu.Dependency = originalDependency;
             Assert.IsTrue(recorder.HasChanged);
             Assert.AreEqual(1, recorder.NumberOfChanges);
@@ -200,10 +214,12 @@ namespace PropertyDependencyFramework_Tests
 
 
             //Swap out dependency
-            tu.Dependency = new DynamicDependency_DependencyIsSwappedOut_NoReferencesToTheOldObjectAreKept_TestClass.ExternalDependency(useSmartNotification)
-            {
-                Source = DefaultNewValue + DefaultNewValue
-            };
+            tu.Dependency =
+                new DynamicDependency_DependencyIsSwappedOut_NoReferencesToTheOldObjectAreKept_TestClass.
+                    ExternalDependency(useSmartNotification)
+                {
+                    Source = DefaultNewValue + DefaultNewValue
+                };
             Assert.AreEqual(2, recorder.NumberOfChanges);
             Assert.IsFalse(originalDependency.AreEventHandlersRegisteredOnPropertyChanged);
             Assert.IsFalse(originalDependency.AreEventHandlersRegisteredOnPropertyChangedInTransaction);
@@ -212,7 +228,9 @@ namespace PropertyDependencyFramework_Tests
         #endregion
 
         #region DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire
-        class DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass : BindableForUnitTests
+
+        private class DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass :
+            BindableForUnitTests
         {
             internal class ChildDependency : BindableForUnitTests
             {
@@ -222,10 +240,10 @@ namespace PropertyDependencyFramework_Tests
                 }
 
                 private decimal _source;
+
                 public decimal Source
                 {
-                    [DebuggerStepThrough]
-                    get { return _source; }
+                    [DebuggerStepThrough] get { return _source; }
                     set
                     {
                         if (value == _source)
@@ -238,10 +256,10 @@ namespace PropertyDependencyFramework_Tests
             }
 
             private DependencyFrameworkObservableCollection<ChildDependency> _children;
+
             public DependencyFrameworkObservableCollection<ChildDependency> Children
             {
-                [DebuggerStepThrough]
-                get { return _children; }
+                [DebuggerStepThrough] get { return _children; }
                 set
                 {
                     if (value == _children)
@@ -270,39 +288,55 @@ namespace PropertyDependencyFramework_Tests
         [TestMethod]
         public void DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire()
         {
-            DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_Impl(useSmartNotification: true);
-            DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_Impl(useSmartNotification: false);
+            DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_Impl(
+                useSmartNotification: true);
+            DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_Impl(
+                useSmartNotification: false);
         }
 
-        private static void DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_Impl(bool useSmartNotification)
+        private static void DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_Impl
+            (bool useSmartNotification)
         {
             var collection1 =
                 new DependencyFrameworkObservableCollection
-                    <DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency>();
+                    <
+                        DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass
+                            .ChildDependency>();
 
-            collection1.Add(new DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency(useSmartNotification)
-            {
-                Source = 1
-            });
-            collection1.Add(new DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency(useSmartNotification)
-            {
-                Source = 10
-            });
+            collection1.Add(
+                new DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.
+                    ChildDependency(useSmartNotification)
+                {
+                    Source = 1
+                });
+            collection1.Add(
+                new DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.
+                    ChildDependency(useSmartNotification)
+                {
+                    Source = 10
+                });
 
             var collection2 =
                 new DependencyFrameworkObservableCollection
-                    <DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency>();
+                    <
+                        DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass
+                            .ChildDependency>();
 
-            collection2.Add(new DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency(useSmartNotification)
-            {
-                Source = 10
-            });
-            collection2.Add(new DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency(useSmartNotification)
-            {
-                Source = 100
-            });
+            collection2.Add(
+                new DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.
+                    ChildDependency(useSmartNotification)
+                {
+                    Source = 10
+                });
+            collection2.Add(
+                new DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.
+                    ChildDependency(useSmartNotification)
+                {
+                    Source = 100
+                });
 
-            var tu = new DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass();
+            var tu =
+                new DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass();
             var recorder = CreatePropertyChangeRecorder(tu, k => k.Target);
 
             tu.Children = collection1;
@@ -311,10 +345,12 @@ namespace PropertyDependencyFramework_Tests
             Assert.AreEqual(1, recorder.NumberOfChanges);
             Assert.AreEqual(11m, recorder.NewValues[0]);
 
-            collection1.Add(new DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency(useSmartNotification)
-            {
-                Source = 10
-            });
+            collection1.Add(
+                new DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.
+                    ChildDependency(useSmartNotification)
+                {
+                    Source = 10
+                });
             Assert.AreEqual(2, recorder.NumberOfChanges);
             Assert.AreEqual(21m, recorder.NewValues[1]);
 
@@ -331,10 +367,12 @@ namespace PropertyDependencyFramework_Tests
             Assert.AreEqual(6, recorder.NumberOfChanges);
             Assert.AreEqual(110m, recorder.NewValues[5]);
 
-            collection2.Add(new DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency(useSmartNotification)
-            {
-                Source = 100
-            });
+            collection2.Add(
+                new DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.
+                    ChildDependency(useSmartNotification)
+                {
+                    Source = 100
+                });
             Assert.AreEqual(7, recorder.NumberOfChanges);
             Assert.AreEqual(210m, recorder.NewValues[6]);
 
@@ -347,10 +385,14 @@ namespace PropertyDependencyFramework_Tests
             Assert.AreEqual(10, recorder.NumberOfChanges);
             Assert.AreEqual(300m, recorder.NewValues[9]);
         }
+
         #endregion
 
         #region DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire
-        class DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass : BindableForUnitTests
+
+        private class
+            DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass :
+                BindableForUnitTests
         {
             internal class ChildDependency : BindableForUnitTests
             {
@@ -360,10 +402,10 @@ namespace PropertyDependencyFramework_Tests
                 }
 
                 private decimal _source;
+
                 public decimal Source
                 {
-                    [DebuggerStepThrough]
-                    get { return _source; }
+                    [DebuggerStepThrough] get { return _source; }
                     set
                     {
                         if (value == _source)
@@ -376,10 +418,10 @@ namespace PropertyDependencyFramework_Tests
             }
 
             private ObservableCollection<ChildDependency> _children;
+
             public ObservableCollection<ChildDependency> Children
             {
-                [DebuggerStepThrough]
-                get { return _children; }
+                [DebuggerStepThrough] get { return _children; }
                 set
                 {
                     if (value == _children)
@@ -408,39 +450,57 @@ namespace PropertyDependencyFramework_Tests
         [TestMethod]
         public void DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire()
         {
-            DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_Impl(useSmartNotification: true);
-            DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_Impl(useSmartNotification: false);
+            DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_Impl(
+                useSmartNotification: true);
+            DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_Impl(
+                useSmartNotification: false);
         }
 
-        private static void DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_Impl(bool useSmartNotification)
+        private static void
+            DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_Impl(
+            bool useSmartNotification)
         {
             var collection1 =
                 new ObservableCollection
-                    <DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency>();
+                    <
+                        DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass
+                            .ChildDependency>();
 
-            collection1.Add(new DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency(useSmartNotification)
-            {
-                Source = 1
-            });
-            collection1.Add(new DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency(useSmartNotification)
-            {
-                Source = 10
-            });
+            collection1.Add(
+                new DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass
+                    .ChildDependency(useSmartNotification)
+                {
+                    Source = 1
+                });
+            collection1.Add(
+                new DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass
+                    .ChildDependency(useSmartNotification)
+                {
+                    Source = 10
+                });
 
             var collection2 =
                 new ObservableCollection
-                    <DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency>();
+                    <
+                        DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass
+                            .ChildDependency>();
 
-            collection2.Add(new DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency(useSmartNotification)
-            {
-                Source = 10
-            });
-            collection2.Add(new DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency(useSmartNotification)
-            {
-                Source = 100
-            });
+            collection2.Add(
+                new DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass
+                    .ChildDependency(useSmartNotification)
+                {
+                    Source = 10
+                });
+            collection2.Add(
+                new DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass
+                    .ChildDependency(useSmartNotification)
+                {
+                    Source = 100
+                });
 
-            var tu = new DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass();
+            var tu =
+                new DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass
+                    ();
             var recorder = CreatePropertyChangeRecorder(tu, k => k.Target);
 
             tu.Children = collection1;
@@ -449,10 +509,12 @@ namespace PropertyDependencyFramework_Tests
             Assert.AreEqual(1, recorder.NumberOfChanges);
             Assert.AreEqual(11m, recorder.NewValues[0]);
 
-            collection1.Add(new DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency(useSmartNotification)
-            {
-                Source = 10
-            });
+            collection1.Add(
+                new DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass
+                    .ChildDependency(useSmartNotification)
+                {
+                    Source = 10
+                });
             Assert.AreEqual(2, recorder.NumberOfChanges);
             Assert.AreEqual(21m, recorder.NewValues[1]);
 
@@ -469,10 +531,12 @@ namespace PropertyDependencyFramework_Tests
             Assert.AreEqual(6, recorder.NumberOfChanges);
             Assert.AreEqual(110m, recorder.NewValues[5]);
 
-            collection2.Add(new DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.ChildDependency(useSmartNotification)
-            {
-                Source = 100
-            });
+            collection2.Add(
+                new DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass
+                    .ChildDependency(useSmartNotification)
+                {
+                    Source = 100
+                });
             Assert.AreEqual(7, recorder.NumberOfChanges);
             Assert.AreEqual(210m, recorder.NewValues[6]);
 
@@ -485,12 +549,18 @@ namespace PropertyDependencyFramework_Tests
             Assert.AreEqual(10, recorder.NumberOfChanges);
             Assert.AreEqual(300m, recorder.NewValues[9]);
         }
+
         #endregion
 
         #region SourcePropertyChangeIsAddOrRemoveOfACollection_ChildIsAddedAndRemoved_NotificationScopeIsOpenedProperlyAndSmartChangeNotificationIsInEffect
-        class SourcePropertyChangeIsAddOrRemoveOfACollection_ChildIsAddedAndRemoved_NotificationScopeIsOpenedProperlyAndSmartChangeNotificationIsInEffect_TestClass : BindableForUnitTests
+
+        private class
+            SourcePropertyChangeIsAddOrRemoveOfACollection_ChildIsAddedAndRemoved_NotificationScopeIsOpenedProperlyAndSmartChangeNotificationIsInEffect_TestClass :
+                BindableForUnitTests
         {
-            public SourcePropertyChangeIsAddOrRemoveOfACollection_ChildIsAddedAndRemoved_NotificationScopeIsOpenedProperlyAndSmartChangeNotificationIsInEffect_TestClass()
+            public
+                SourcePropertyChangeIsAddOrRemoveOfACollection_ChildIsAddedAndRemoved_NotificationScopeIsOpenedProperlyAndSmartChangeNotificationIsInEffect_TestClass
+                ()
             {
                 Children = new DependencyFrameworkObservableCollection<Dependency>();
             }
@@ -503,7 +573,7 @@ namespace PropertyDependencyFramework_Tests
                 {
                     Property(() => Target)
                         .Depends(p => p.On(() => MidLayer1)
-                                        .AndOn(() => MidLayer2));
+                            .AndOn(() => MidLayer2));
 
                     return MidLayer1 + MidLayer2;
                 }
@@ -545,10 +615,10 @@ namespace PropertyDependencyFramework_Tests
             public class Dependency : BindableForUnitTests
             {
                 private decimal _source;
+
                 public decimal Source
                 {
-                    [DebuggerStepThrough]
-                    get { return _source; }
+                    [DebuggerStepThrough] get { return _source; }
                     set
                     {
                         if (value == _source)
@@ -562,15 +632,18 @@ namespace PropertyDependencyFramework_Tests
         }
 
         [TestMethod]
-        public void SourcePropertyChangeIsAddOrRemoveOfACollection_ChildIsAddedAndRemoved_NotificationScopeIsOpenedProperlyAndSmartChangeNotificationIsInEffect()
+        public void
+            SourcePropertyChangeIsAddOrRemoveOfACollection_ChildIsAddedAndRemoved_NotificationScopeIsOpenedProperlyAndSmartChangeNotificationIsInEffect
+            ()
         {
             var tu =
-                new SourcePropertyChangeIsAddOrRemoveOfACollection_ChildIsAddedAndRemoved_NotificationScopeIsOpenedProperlyAndSmartChangeNotificationIsInEffect_TestClass();
+                new SourcePropertyChangeIsAddOrRemoveOfACollection_ChildIsAddedAndRemoved_NotificationScopeIsOpenedProperlyAndSmartChangeNotificationIsInEffect_TestClass
+                    ();
 
             var recorder = CreatePropertyChangeRecorder(tu, k => k.Target);
 
             tu.Children.Add(new SourcePropertyChangeIsAddOrRemoveOfACollection_ChildIsAddedAndRemoved_NotificationScopeIsOpenedProperlyAndSmartChangeNotificationIsInEffect_TestClass
-                                 .Dependency()
+                .Dependency()
             {
                 Source = 5
             });
@@ -579,12 +652,18 @@ namespace PropertyDependencyFramework_Tests
             Assert.AreEqual(1, recorder.NumberOfChanges);
             Assert.AreEqual(10m, recorder.NewValues.Last());
         }
+
         #endregion
 
         #region CallbackChangesProperty_CallbackIsInitiatedWithASmartPropertyNotification_SecondPropertyChangedIsExecutedWithSmartPropertyNotification
-        class CallbackChangesProperty_CallbackIsInitiatedWithASmartPropertyNotification_SecondPropertyChangedIsExecutedWithSmartPropertyNotification_TestClass : BindableForUnitTests
+
+        private class
+            CallbackChangesProperty_CallbackIsInitiatedWithASmartPropertyNotification_SecondPropertyChangedIsExecutedWithSmartPropertyNotification_TestClass :
+                BindableForUnitTests
         {
-            public CallbackChangesProperty_CallbackIsInitiatedWithASmartPropertyNotification_SecondPropertyChangedIsExecutedWithSmartPropertyNotification_TestClass(bool useSmartPropertyChangeNotificationByDefault)
+            public
+                CallbackChangesProperty_CallbackIsInitiatedWithASmartPropertyNotification_SecondPropertyChangedIsExecutedWithSmartPropertyNotification_TestClass
+                (bool useSmartPropertyChangeNotificationByDefault)
                 : base(useSmartPropertyChangeNotificationByDefault)
             {
                 RegisterCallbackDependency(this, k => k.DelegatedSource, OnDelegatedSourceChanged);
@@ -613,10 +692,10 @@ namespace PropertyDependencyFramework_Tests
             }
 
             private string _originalSource;
+
             public string OriginalSource
             {
-                [DebuggerStepThrough]
-                get { return _originalSource; }
+                [DebuggerStepThrough] get { return _originalSource; }
                 set
                 {
                     if (value == _originalSource)
@@ -639,10 +718,10 @@ namespace PropertyDependencyFramework_Tests
             }
 
             private string _sourceInRoundTwo;
+
             public string SourceInRoundTwo
             {
-                [DebuggerStepThrough]
-                get { return _sourceInRoundTwo; }
+                [DebuggerStepThrough] get { return _sourceInRoundTwo; }
                 set
                 {
                     if (value == _sourceInRoundTwo)
@@ -654,10 +733,10 @@ namespace PropertyDependencyFramework_Tests
             }
 
             private string _sourceInFinalRound;
+
             public string SourceInFinalRound
             {
-                [DebuggerStepThrough]
-                get { return _sourceInFinalRound; }
+                [DebuggerStepThrough] get { return _sourceInFinalRound; }
                 set
                 {
                     if (value == _sourceInFinalRound)
@@ -696,7 +775,7 @@ namespace PropertyDependencyFramework_Tests
                 {
                     Property(() => TopLevel)
                         .Depends(p => p.On(() => MidLevel1)
-                                        .AndOn(() => MidLevel2));
+                            .AndOn(() => MidLevel2));
 
                     return MidLevel1 + MidLevel2;
                 }
@@ -704,10 +783,13 @@ namespace PropertyDependencyFramework_Tests
         }
 
         [TestMethod]
-        public void CallbackChangesProperty_CallbackIsInitiatedWithASmartPropertyNotification_SecondPropertyChangedIsExecutedWithSmartPropertyNotification()
+        public void
+            CallbackChangesProperty_CallbackIsInitiatedWithASmartPropertyNotification_SecondPropertyChangedIsExecutedWithSmartPropertyNotification
+            ()
         {
             var tu =
-                new CallbackChangesProperty_CallbackIsInitiatedWithASmartPropertyNotification_SecondPropertyChangedIsExecutedWithSmartPropertyNotification_TestClass(true);
+                new CallbackChangesProperty_CallbackIsInitiatedWithASmartPropertyNotification_SecondPropertyChangedIsExecutedWithSmartPropertyNotification_TestClass
+                    (true);
 
             var recorderDelegatedSource = CreatePropertyChangeRecorder(tu, k => k.DelegatedSource);
             var recorderDelegatedSourceInRoundTwo = CreatePropertyChangeRecorder(tu, k => k.DelegatedSourceInRoundTwo);
@@ -718,16 +800,22 @@ namespace PropertyDependencyFramework_Tests
             Assert.IsTrue(recorderDelegatedSource.HasChanged);
             Assert.IsTrue(recorderDelegatedSourceInRoundTwo.HasChanged);
             Assert.IsTrue(recorderTopLevel.HasChanged);
-            Assert.AreEqual(DefaultNewValue.ReverseString() + DefaultNewValue.ReverseString(), recorderTopLevel.NewValues.Last());
+            Assert.AreEqual(DefaultNewValue.ReverseString() + DefaultNewValue.ReverseString(),
+                recorderTopLevel.NewValues.Last());
             Assert.AreEqual(1, recorderTopLevel.NumberOfChanges);
         }
+
         #endregion
 
         #region CallbackChangesCollection_CallbackIsInitiatedWithASmartPropertyNotification_CollectionIsChangedWithSmartPropertyNotification
 
-        class CallbackChangesCollection_CallbackIsInitiatedWithASmartPropertyNotification_CollectionIsChangedWithSmartPropertyNotification_TestClass : BindableForUnitTests
+        private class
+            CallbackChangesCollection_CallbackIsInitiatedWithASmartPropertyNotification_CollectionIsChangedWithSmartPropertyNotification_TestClass :
+                BindableForUnitTests
         {
-            public CallbackChangesCollection_CallbackIsInitiatedWithASmartPropertyNotification_CollectionIsChangedWithSmartPropertyNotification_TestClass(bool useSmartPropertyChangeNotificationByDefault)
+            public
+                CallbackChangesCollection_CallbackIsInitiatedWithASmartPropertyNotification_CollectionIsChangedWithSmartPropertyNotification_TestClass
+                (bool useSmartPropertyChangeNotificationByDefault)
                 : base(useSmartPropertyChangeNotificationByDefault)
             {
                 Children = new DependencyFrameworkObservableCollection<ChildDependency>();
@@ -743,16 +831,16 @@ namespace PropertyDependencyFramework_Tests
 
             private void OnDelegatedSourceInRoundTwoChanged()
             {
-                Children.Add(new ChildDependency() { Source = SourceInRoundTwo });
+                Children.Add(new ChildDependency() {Source = SourceInRoundTwo});
             }
 
             internal class ChildDependency : BindableForUnitTests
             {
                 private string _source;
+
                 public string Source
                 {
-                    [DebuggerStepThrough]
-                    get { return _source; }
+                    [DebuggerStepThrough] get { return _source; }
                     set
                     {
                         if (value == _source)
@@ -776,10 +864,10 @@ namespace PropertyDependencyFramework_Tests
             }
 
             private string _originalSource;
+
             public string OriginalSource
             {
-                [DebuggerStepThrough]
-                get { return _originalSource; }
+                [DebuggerStepThrough] get { return _originalSource; }
                 set
                 {
                     if (value == _originalSource)
@@ -802,10 +890,10 @@ namespace PropertyDependencyFramework_Tests
             }
 
             private string _sourceInRoundTwo;
+
             public string SourceInRoundTwo
             {
-                [DebuggerStepThrough]
-                get { return _sourceInRoundTwo; }
+                [DebuggerStepThrough] get { return _sourceInRoundTwo; }
                 set
                 {
                     if (value == _sourceInRoundTwo)
@@ -857,7 +945,7 @@ namespace PropertyDependencyFramework_Tests
                 {
                     Property(() => TopLevel)
                         .Depends(p => p.On(() => MidLevel1)
-                                        .AndOn(() => MidLevel2));
+                            .AndOn(() => MidLevel2));
 
                     return MidLevel1 + MidLevel2;
                 }
@@ -865,10 +953,13 @@ namespace PropertyDependencyFramework_Tests
         }
 
         [TestMethod]
-        public void CallbackChangesCollection_CallbackIsInitiatedWithASmartPropertyNotification_CollectionIsChangedWithSmartPropertyNotification()
+        public void
+            CallbackChangesCollection_CallbackIsInitiatedWithASmartPropertyNotification_CollectionIsChangedWithSmartPropertyNotification
+            ()
         {
             var tu =
-                new CallbackChangesCollection_CallbackIsInitiatedWithASmartPropertyNotification_CollectionIsChangedWithSmartPropertyNotification_TestClass(true);
+                new CallbackChangesCollection_CallbackIsInitiatedWithASmartPropertyNotification_CollectionIsChangedWithSmartPropertyNotification_TestClass
+                    (true);
 
             var recorderDelegatedSource = CreatePropertyChangeRecorder(tu, k => k.DelegatedSource);
             var recorderDelegatedSourceInRoundTwo = CreatePropertyChangeRecorder(tu, k => k.DelegatedSourceInRoundTwo);
@@ -879,16 +970,22 @@ namespace PropertyDependencyFramework_Tests
             Assert.IsTrue(recorderDelegatedSource.HasChanged);
             Assert.IsTrue(recorderDelegatedSourceInRoundTwo.HasChanged);
             Assert.IsTrue(recorderTopLevel.HasChanged);
-            Assert.AreEqual(DefaultNewValue.ReverseString() + DefaultNewValue.ReverseString(), recorderTopLevel.NewValues.Last());
+            Assert.AreEqual(DefaultNewValue.ReverseString() + DefaultNewValue.ReverseString(),
+                recorderTopLevel.NewValues.Last());
             Assert.AreEqual(1, recorderTopLevel.NumberOfChanges);
         }
 
         #endregion
 
         #region CallbackChangesAProperty_CallbackIsFiredOfObservableCollectionChange_PropertyChangeIsDeferred
-        public class CallbackChangesAProperty_CallbackIsFiredOfObservableCollectionChange_PropertyChangeIsDeferred_TestClass : BindableForUnitTests
+
+        public class
+            CallbackChangesAProperty_CallbackIsFiredOfObservableCollectionChange_PropertyChangeIsDeferred_TestClass :
+                BindableForUnitTests
         {
-            public CallbackChangesAProperty_CallbackIsFiredOfObservableCollectionChange_PropertyChangeIsDeferred_TestClass(bool useSmartPropertyChangeNotificationByDefault)
+            public
+                CallbackChangesAProperty_CallbackIsFiredOfObservableCollectionChange_PropertyChangeIsDeferred_TestClass(
+                bool useSmartPropertyChangeNotificationByDefault)
                 : base(useSmartPropertyChangeNotificationByDefault)
             {
                 Children = new DependencyFrameworkObservableCollection<ChildClass>();
@@ -902,10 +999,10 @@ namespace PropertyDependencyFramework_Tests
             }
 
             private string _target;
+
             public string Target
             {
-                [DebuggerStepThrough]
-                get { return _target; }
+                [DebuggerStepThrough] get { return _target; }
                 set
                 {
                     if (value == _target)
@@ -928,18 +1025,24 @@ namespace PropertyDependencyFramework_Tests
         [TestMethod]
         public void CallbackChangesAProperty_CallbackIsFiredOfObservableCollectionChange_PropertyChangeIsDeferred()
         {
-            var tu = new CallbackChangesAProperty_CallbackIsFiredOfObservableCollectionChange_PropertyChangeIsDeferred_TestClass(true);
+            var tu =
+                new CallbackChangesAProperty_CallbackIsFiredOfObservableCollectionChange_PropertyChangeIsDeferred_TestClass
+                    (true);
             var recorder = CreatePropertyChangeRecorder(tu, k => k.Target);
 
-            tu.Children.Add(new CallbackChangesAProperty_CallbackIsFiredOfObservableCollectionChange_PropertyChangeIsDeferred_TestClass.ChildClass());
+            tu.Children.Add(
+                new CallbackChangesAProperty_CallbackIsFiredOfObservableCollectionChange_PropertyChangeIsDeferred_TestClass
+                    .ChildClass());
 
             Assert.IsTrue(recorder.HasChanged);
             Assert.AreEqual(1, recorder.NumberOfChanges);
             Assert.AreEqual("Changed!", recorder.NewValues[0]);
         }
+
         #endregion
 
-        static PropertyChangeRecorder CreatePropertyChangeRecorder<TBindable, TProperty>(TBindable bindable, Expression<Func<TBindable, TProperty>> propertyExpression)
+        private static PropertyChangeRecorder CreatePropertyChangeRecorder<TBindable, TProperty>(TBindable bindable,
+            Expression<Func<TBindable, TProperty>> propertyExpression)
             where TBindable : INotifyPropertyChanged
         {
             var recorder = new PropertyChangeRecorder();
@@ -960,46 +1063,4 @@ namespace PropertyDependencyFramework_Tests
             return recorder;
         }
     }
-
-
-    public class ComplexMockBindableBase : BindableExt
-    {
-        private void RegisterDependentProp()
-        {
-            TypeProperty(() => DependentProp)
-                .Depends(p => p.OnImmutableSource(()=>this, () => InputProp));
-        }
-        public decimal DependentProp
-        {
-            get
-            {
-                //NOT TESTING CACHING
-                return InputProp;
-            }
-        }
-
-
-        private decimal _inputProp;
-        public decimal InputProp
-        {
-            get { return _inputProp; }
-            set
-            {
-                if (value == _inputProp)
-                    return;
-
-                _inputProp = value;
-                NotifyPropertyChanged(() => InputProp);
-            }
-        }
-
-        protected override Action[] GetPropertyRegistrations()
-        {
-            return new Action[]
-            {
-                RegisterDependentProp
-            };
-        }
-    }
-
 }

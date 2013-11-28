@@ -184,38 +184,4 @@ namespace PropertyDependencyFramework.DeclarativeAPI
         }
         #endregion
     }
-
-    internal class DependentPropertyImplementationForTypeExt : IPropertyDependencyForTypeExt, IDependentPropertyForTypeExt
-    {
-        readonly string _dependentPropertyName;
-        readonly IBindableHiddenRegistrationAPIExt _propertyRegistrationApi;
-        private readonly Type _dependentType;
-
-        public DependentPropertyImplementationForTypeExt(string dependentPropertyName, IBindableHiddenRegistrationAPIExt propertyRegistrationApi, Type dependentType)
-        {
-            _dependentType = dependentType;
-            _dependentPropertyName = dependentPropertyName;
-            _propertyRegistrationApi = propertyRegistrationApi;
-        }
-
-        public IPropertyDependencyForTypeExt OnImmutableSource<TSource, TProperty>(Expression<Func<TSource>> source, Expression<Func<TProperty>> property)
-                   where TSource : INotifyPropertyChanged
-        {
-            return ThisDependsOn(source, property);
-        }
-
-        public IDependentPropertyForTypeExt Depends(Action<IPropertyDependencyForTypeExt> deferredPropDependency)
-        {
-            throw new NotImplementedException();
-        }
-
-        IPropertyDependencyForTypeExt ThisDependsOn<TSource, TSourceProp>(Expression<Func<TSource>> source, Expression<Func<TSourceProp>> sourceProperty)
-            where TSource : INotifyPropertyChanged 
-        {
-            _propertyRegistrationApi.RegisterPropertyDependencyForType(source, sourceProperty, _dependentPropertyName, _dependentType);
-
-            return this;
-        }
-
-    }
 }
