@@ -33,8 +33,6 @@ namespace PropertyDependencyFramework
         protected BindableBase(bool useSmartPropertyChangeNotificationByDefault)
         {
             UseSmartPropertyChangeNotificationByDefault = useSmartPropertyChangeNotificationByDefault;
-
-            InitializePropertyDependencies();
         }
 
 
@@ -357,51 +355,63 @@ namespace PropertyDependencyFramework
             [DebuggerStepThrough]
             get { return _registrationId; }
         }
-        void IBindableHiddenRegistrationAPI.RegisterPropertyDependency(INotifyPropertyChanged masterPropertyOwner, string masterPropertyName, string dependantPropertyName)
+        void IBindableHiddenRegistrationAPI.RegisterPropertyDependency(INotifyPropertyChanged masterPropertyOwner, string masterPropertyName, string dependentPropertyName)
         {
-            if (dependantPropertyName == null)
-                throw new ArgumentNullException("dependantPropertyName");
-
-            EnsurePropertyDependencyDictionaryAcceptsDependantProperties(masterPropertyOwner, masterPropertyName);
-
-            if (_propertyDependencies[masterPropertyOwner].PropertyDependencies[masterPropertyName].DependentProperties.Contains(dependantPropertyName))
+            bool registrationAlreadyCompleted = CreatePropertyDependencyRegistration(masterPropertyOwner, masterPropertyName, dependentPropertyName);
+         
+            if (registrationAlreadyCompleted)
                 return;
-
-#if DEBUG
-            if (ArePropertyDependencySanityChecksEnabled)
-            {
-                EnsureObjectExposesProperty(this, dependantPropertyName);
-            }
-#endif
-
-            _propertyDependencies[masterPropertyOwner].PropertyDependencies[masterPropertyName].DependentProperties.Add(dependantPropertyName);
 
             SubscribeToMasterPropertyOwner(masterPropertyOwner);
         }
 
-
-        void IBindableHiddenRegistrationAPI.RegisterPropertyDependency(INotifyCollectionChanged masterPropertyOwnerCollection, string masterPropertyName, string dependantPropertyName)
+        private bool CreatePropertyDependencyRegistration(INotifyPropertyChanged masterPropertyOwner, string masterPropertyName,
+            string dependentPropertyName)
         {
-            if (dependantPropertyName == null)
-                throw new ArgumentNullException(dependantPropertyName);
+            if (dependentPropertyName == null)
+                throw new ArgumentNullException("dependentPropertyName");
+
+            EnsurePropertyDependencyDictionaryAcceptsDependantProperties(masterPropertyOwner, masterPropertyName);
+
+            if (_propertyDependencies[masterPropertyOwner].PropertyDependencies[masterPropertyName]
+                    .DependentProperties.Contains(dependentPropertyName))
+                return true;
+
+#if DEBUG
+            if (ArePropertyDependencySanityChecksEnabled)
+            {
+                EnsureObjectExposesProperty(this, dependentPropertyName);
+            }
+#endif
+
+            _propertyDependencies[masterPropertyOwner].PropertyDependencies[masterPropertyName].DependentProperties.Add(
+                dependentPropertyName);
+            return false;
+        }
+
+
+        void IBindableHiddenRegistrationAPI.RegisterPropertyDependency(INotifyCollectionChanged masterPropertyOwnerCollection, string masterPropertyName, string dependentPropertyName)
+        {
+            if (dependentPropertyName == null)
+                throw new ArgumentNullException(dependentPropertyName);
 
             foreach (INotifyPropertyChanged child in ((IEnumerable)masterPropertyOwnerCollection))
             {
-                HiddenRegistrationAPI.RegisterPropertyDependency(child, masterPropertyName, dependantPropertyName);
+                HiddenRegistrationAPI.RegisterPropertyDependency(child, masterPropertyName, dependentPropertyName);
             }
 
             masterPropertyOwnerCollection.CollectionChanged -= OnCollectionChanged;
             masterPropertyOwnerCollection.CollectionChanged += OnCollectionChanged;
 
-            Action<object> registerNewItemDelegate = newItem => HiddenRegistrationAPI.RegisterPropertyDependency((INotifyPropertyChanged)newItem, masterPropertyName, dependantPropertyName);
+            Action<object> registerNewItemDelegate = newItem => HiddenRegistrationAPI.RegisterPropertyDependency((INotifyPropertyChanged)newItem, masterPropertyName, dependentPropertyName);
             if (!_collectionDependencies.ContainsKey(masterPropertyOwnerCollection))
                 _collectionDependencies.Add(masterPropertyOwnerCollection, new CollectionPropertyDependencyRegistration());
 
             CollectionPropertyDependencyRegistration propertyDependencyRegistration = _collectionDependencies[masterPropertyOwnerCollection];
-            propertyDependencyRegistration.ItemPropertyDependencyRegistrationDelegates.Add(new CollectionPropertyDependencyRegistration.PropertyRegistrationIdentifier(masterPropertyName, dependantPropertyName), registerNewItemDelegate);
+            propertyDependencyRegistration.ItemPropertyDependencyRegistrationDelegates.Add(new CollectionPropertyDependencyRegistration.PropertyRegistrationIdentifier(masterPropertyName, dependentPropertyName), registerNewItemDelegate);
 
-            if (!propertyDependencyRegistration.DependentProperties.Contains(dependantPropertyName))
-                propertyDependencyRegistration.DependentProperties.Add(dependantPropertyName);
+            if (!propertyDependencyRegistration.DependentProperties.Contains(dependentPropertyName))
+                propertyDependencyRegistration.DependentProperties.Add(dependentPropertyName);
         }
 
         void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T>(T masterPropertyOwner, CallbackContainer callbackContainer)
@@ -909,9 +919,10 @@ namespace PropertyDependencyFramework
 
 
 
+        #region Type Registration API
 
 
-        #region Declarative Property Dependency Registration API
+        #region Declarative Property Dependency Type Registration API
         internal static Dictionary<Type, Dictionary<string, DependentPropertyTypeRegistrationImplementation>> _typeRegistrationProperties = new Dictionary<Type, Dictionary<string, DependentPropertyTypeRegistrationImplementation>>();
         internal static ITypeRegistrationAPI _typeRegistrationApi = new TypeRegistrationAPI();
         protected static IDependentPropertyTypeRegistration TypeRegistrationProperty<T>(Type dependentType, Expression<Func<T>> dependentProperty)
@@ -935,47 +946,19 @@ namespace PropertyDependencyFramework
         }
         #endregion
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        private static readonly HashSet<Type> _registeredTypes = new HashSet<Type>();
-        internal static HashSet<Type> RegisteredTypes { get { return _registeredTypes; }}
-
-        private void InitializePropertyDependencies()
+        protected void InitializePropertyDependencies()
         {
-            Type currentType = this.GetType();
+            Type currentType = GetType();
 
-            if (!_registeredTypes.Contains(currentType))
+            if (!_typeRegistrationProperties.ContainsKey(currentType))
             {
                 foreach (Action propertyRegistration in GetPropertyRegistrations())
                 {
                     propertyRegistration();
                 }
-
-                _registeredTypes.Add(currentType);
             }
 
             RegisterPropertyDependenciesForInstance();
-        }
-
-        private void RegisterPropertyDependenciesForInstance()
-        {
-            
         }
 
         protected virtual Action[] GetPropertyRegistrations()
@@ -983,6 +966,28 @@ namespace PropertyDependencyFramework
             return new Action[0];
         }
 
+        private void RegisterPropertyDependenciesForInstance()
+        {
+            Type thisType = GetType();
+            if (!_typeRegistrationApi.DependenciesByType.ContainsKey(thisType))
+                return;
+
+            TypeDependencies dependencies = _typeRegistrationApi.DependenciesByType[thisType];
+            foreach (SourceProvider sourceProvider in dependencies.SourceProviders.Values)
+            {
+                INotifyPropertyChanged sourceInstance = sourceProvider.SourceRetrievalFunc(this);
+                foreach (SourceProperty sourceProperty in sourceProvider.SourceProperties.Values)
+                {
+                    foreach (string dependentPropertyName in sourceProperty.DependentPropertyNames)
+                    {
+                        CreatePropertyDependencyRegistration(sourceInstance, sourceProperty.Name, dependentPropertyName);
+                    }
+                }
+                SubscribeToMasterPropertyOwner(sourceInstance);
+            }
+        }
+
+        #endregion
     }
 
     public class TypeDependencies
@@ -1012,9 +1017,9 @@ namespace PropertyDependencyFramework
         public SourceProperty(string name)
         {
             Name = name;
-            DependentProperties = new List<string>();
+            DependentPropertyNames = new List<string>();
         }
         public string Name { get; private set; }
-        public List<string> DependentProperties { get; private set; }
+        public List<string> DependentPropertyNames { get; private set; }
     }
 }

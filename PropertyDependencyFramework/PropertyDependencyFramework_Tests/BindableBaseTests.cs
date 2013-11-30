@@ -69,7 +69,7 @@ namespace PropertyDependencyFramework_Tests
 			tu.Source = "Initial";
 			string expectedValue = "NewValue";
 
-			var recorder = CreatePropertyChangeRecorder(tu, k => k.Target);
+            var recorder = PropertyChangeRecorder.CreatePropertyChangeRecorder(tu, k => k.Target);
 			tu.Source = expectedValue;
 
 			Assert.IsTrue(recorder.HasChanged);
@@ -136,7 +136,7 @@ namespace PropertyDependencyFramework_Tests
 			tu.Source = "Initial";
 			var expectedValue = "ABC";
 
-			var recorder = CreatePropertyChangeRecorder(tu, k => k.Target);
+			var recorder =PropertyChangeRecorder.CreatePropertyChangeRecorder(tu, k => k.Target);
 			tu.Source = expectedValue;
 
 			Assert.IsTrue(recorder.HasChanged);
@@ -206,7 +206,7 @@ namespace PropertyDependencyFramework_Tests
 			DirectDependencyOnExternalObject_ExternalObjectPropertyChanges_TargetPropertyShouldChange_TestClass.Dependency externalObject = new DirectDependencyOnExternalObject_ExternalObjectPropertyChanges_TargetPropertyShouldChange_TestClass.Dependency(useSmartNotification);
 			DirectDependencyOnExternalObject_ExternalObjectPropertyChanges_TargetPropertyShouldChange_TestClass dependentClass = new DirectDependencyOnExternalObject_ExternalObjectPropertyChanges_TargetPropertyShouldChange_TestClass(externalObject);
 
-			var recorder = CreatePropertyChangeRecorder(dependentClass, k => k.Target);
+			var recorder =PropertyChangeRecorder.CreatePropertyChangeRecorder(dependentClass, k => k.Target);
 			externalObject.Source = DefaultNewValue;
 
 			Assert.IsTrue(recorder.HasChanged);
@@ -290,7 +290,7 @@ namespace PropertyDependencyFramework_Tests
 		{
 			var tu = new IndirectDependency_PropertyChanges_OnlyOnePropertyChangeNotificationIsFired_TestClass(useSmartPropertyChangeNotificationByDefault: true);
 
-			var recorder = CreatePropertyChangeRecorder(tu, k => k.TopLayer);
+			var recorder =PropertyChangeRecorder.CreatePropertyChangeRecorder(tu, k => k.TopLayer);
 			tu.BottomLayer = DefaultNewValue;
 
 			Assert.IsTrue(recorder.HasChanged);
@@ -504,7 +504,7 @@ namespace PropertyDependencyFramework_Tests
 		{
 			var testClass = new DirectDependencyOnCollectionsChildProperty_CollectionChildIsModifiedAddedAndRemoved_TargetPropertyIsUpdated_TestClass(useSmartNotification);
 
-			var recorder = CreatePropertyChangeRecorder(testClass, k => k.SumOfChildren);
+			var recorder =PropertyChangeRecorder.CreatePropertyChangeRecorder(testClass, k => k.SumOfChildren);
 
 			testClass.Children.Add(
 								   new DirectDependencyOnCollectionsChildProperty_CollectionChildIsModifiedAddedAndRemoved_TargetPropertyIsUpdated_CollectionChildClass()
@@ -590,7 +590,7 @@ namespace PropertyDependencyFramework_Tests
 		{
 			var testClass = new DirectDependencyOnObservableCollectionsChildProperty_CollectionChildIsModifiedAddedAndRemoved_TargetPropertyIsUpdated_TestClass(useSmartNotification);
 
-			var recorder = CreatePropertyChangeRecorder(testClass, k => k.SumOfChildren);
+			var recorder =PropertyChangeRecorder.CreatePropertyChangeRecorder(testClass, k => k.SumOfChildren);
 
 			testClass.Children.Add(
 								   new DirectDependencyOnObservableCollectionsChildProperty_CollectionChildIsModifiedAddedAndRemoved_TargetPropertyIsUpdated_CollectionChildClass()
@@ -677,7 +677,7 @@ namespace PropertyDependencyFramework_Tests
 		{
 			var tu = new DirectDependencyOnCollectionsChildProperty_ChildIsRemoved_NoReferencesAreKeptOnChild_TestClass(useSmartNotification);
 
-			var recorder = CreatePropertyChangeRecorder(tu, k => k.Target);
+			var recorder =PropertyChangeRecorder.CreatePropertyChangeRecorder(tu, k => k.Target);
 			tu.Children.Add(new DirectDependencyOnCollectionsChildProperty_ChildIsRemoved_NoReferencesAreKeptOnChild_TestClass.Dependency()
 			{
 				Source = 1
@@ -765,7 +765,7 @@ namespace PropertyDependencyFramework_Tests
 		{
 			var tu = new DirectDependencyOnObservableCollectionsChildProperty_ChildIsRemoved_NoReferencesAreKeptOnChild_TestClass(useSmartNotification);
 
-			var recorder = CreatePropertyChangeRecorder(tu, k => k.Target);
+			var recorder =PropertyChangeRecorder.CreatePropertyChangeRecorder(tu, k => k.Target);
 			tu.Children.Add(new DirectDependencyOnObservableCollectionsChildProperty_ChildIsRemoved_NoReferencesAreKeptOnChild_TestClass.Dependency()
 			{
 				Source = 1
@@ -897,25 +897,5 @@ namespace PropertyDependencyFramework_Tests
 		}
 		#endregion
 
-		static PropertyChangeRecorder CreatePropertyChangeRecorder<TBindable, TProperty>(TBindable bindable, Expression<Func<TBindable, TProperty>> propertyExpression)
-			where TBindable : INotifyPropertyChanged
-		{
-			var recorder = new PropertyChangeRecorder();
-
-			var compiledExpression = propertyExpression.Compile();
-			var initialValue = compiledExpression(bindable);
-
-			var propertyName = PropertyNameResolver.GetPropertyName(propertyExpression);
-			bindable.PropertyChanged += (s, e) =>
-			{
-				if (e.PropertyName == propertyName)
-				{
-					recorder.NumberOfChanges++;
-					recorder.NewValues.Add(compiledExpression(bindable));
-				}
-			};
-
-			return recorder;
-		}
 	}
 }

@@ -102,8 +102,8 @@ namespace PropertyDependencyFramework_Tests
         {
             var tu = new DynamicDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass();
 
-            var recorderTarget1 = CreatePropertyChangeRecorder(tu, k => k.Target);
-            var recorderTarget2 = CreatePropertyChangeRecorder(tu, k => k.Target2);
+            var recorderTarget1 =PropertyChangeRecorder.CreatePropertyChangeRecorder(tu, k => k.Target);
+            var recorderTarget2 =PropertyChangeRecorder.CreatePropertyChangeRecorder(tu, k => k.Target2);
             tu.Dependency =
                 new DynamicDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass.
                     ExternalDependency(useSmartNotification)
@@ -199,7 +199,7 @@ namespace PropertyDependencyFramework_Tests
         {
             var tu = new DynamicDependency_DependencyIsSwappedOut_NoReferencesToTheOldObjectAreKept_TestClass();
 
-            var recorder = CreatePropertyChangeRecorder(tu, k => k.Target);
+            var recorder =PropertyChangeRecorder.CreatePropertyChangeRecorder(tu, k => k.Target);
             var originalDependency =
                 new DynamicDependency_DependencyIsSwappedOut_NoReferencesToTheOldObjectAreKept_TestClass.
                     ExternalDependency(useSmartNotification)
@@ -337,7 +337,7 @@ namespace PropertyDependencyFramework_Tests
 
             var tu =
                 new DynamicCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass();
-            var recorder = CreatePropertyChangeRecorder(tu, k => k.Target);
+            var recorder =PropertyChangeRecorder.CreatePropertyChangeRecorder(tu, k => k.Target);
 
             tu.Children = collection1;
 
@@ -501,7 +501,7 @@ namespace PropertyDependencyFramework_Tests
             var tu =
                 new DynamicObservableCollectionDependency_DependencyIsSwappedOut_PropertyChangeNotificationsStillFire_TestClass
                     ();
-            var recorder = CreatePropertyChangeRecorder(tu, k => k.Target);
+            var recorder =PropertyChangeRecorder.CreatePropertyChangeRecorder(tu, k => k.Target);
 
             tu.Children = collection1;
 
@@ -640,7 +640,7 @@ namespace PropertyDependencyFramework_Tests
                 new SourcePropertyChangeIsAddOrRemoveOfACollection_ChildIsAddedAndRemoved_NotificationScopeIsOpenedProperlyAndSmartChangeNotificationIsInEffect_TestClass
                     ();
 
-            var recorder = CreatePropertyChangeRecorder(tu, k => k.Target);
+            var recorder =PropertyChangeRecorder.CreatePropertyChangeRecorder(tu, k => k.Target);
 
             tu.Children.Add(new SourcePropertyChangeIsAddOrRemoveOfACollection_ChildIsAddedAndRemoved_NotificationScopeIsOpenedProperlyAndSmartChangeNotificationIsInEffect_TestClass
                 .Dependency()
@@ -791,9 +791,9 @@ namespace PropertyDependencyFramework_Tests
                 new CallbackChangesProperty_CallbackIsInitiatedWithASmartPropertyNotification_SecondPropertyChangedIsExecutedWithSmartPropertyNotification_TestClass
                     (true);
 
-            var recorderDelegatedSource = CreatePropertyChangeRecorder(tu, k => k.DelegatedSource);
-            var recorderDelegatedSourceInRoundTwo = CreatePropertyChangeRecorder(tu, k => k.DelegatedSourceInRoundTwo);
-            var recorderTopLevel = CreatePropertyChangeRecorder(tu, k => k.TopLevel);
+            var recorderDelegatedSource =PropertyChangeRecorder.CreatePropertyChangeRecorder(tu, k => k.DelegatedSource);
+            var recorderDelegatedSourceInRoundTwo =PropertyChangeRecorder.CreatePropertyChangeRecorder(tu, k => k.DelegatedSourceInRoundTwo);
+            var recorderTopLevel =PropertyChangeRecorder.CreatePropertyChangeRecorder(tu, k => k.TopLevel);
 
             tu.OriginalSource = DefaultNewValue;
 
@@ -961,9 +961,9 @@ namespace PropertyDependencyFramework_Tests
                 new CallbackChangesCollection_CallbackIsInitiatedWithASmartPropertyNotification_CollectionIsChangedWithSmartPropertyNotification_TestClass
                     (true);
 
-            var recorderDelegatedSource = CreatePropertyChangeRecorder(tu, k => k.DelegatedSource);
-            var recorderDelegatedSourceInRoundTwo = CreatePropertyChangeRecorder(tu, k => k.DelegatedSourceInRoundTwo);
-            var recorderTopLevel = CreatePropertyChangeRecorder(tu, k => k.TopLevel);
+            var recorderDelegatedSource =PropertyChangeRecorder.CreatePropertyChangeRecorder(tu, k => k.DelegatedSource);
+            var recorderDelegatedSourceInRoundTwo =PropertyChangeRecorder.CreatePropertyChangeRecorder(tu, k => k.DelegatedSourceInRoundTwo);
+            var recorderTopLevel =PropertyChangeRecorder.CreatePropertyChangeRecorder(tu, k => k.TopLevel);
 
             tu.OriginalSource = DefaultNewValue;
 
@@ -1028,7 +1028,7 @@ namespace PropertyDependencyFramework_Tests
             var tu =
                 new CallbackChangesAProperty_CallbackIsFiredOfObservableCollectionChange_PropertyChangeIsDeferred_TestClass
                     (true);
-            var recorder = CreatePropertyChangeRecorder(tu, k => k.Target);
+            var recorder =PropertyChangeRecorder.CreatePropertyChangeRecorder(tu, k => k.Target);
 
             tu.Children.Add(
                 new CallbackChangesAProperty_CallbackIsFiredOfObservableCollectionChange_PropertyChangeIsDeferred_TestClass
@@ -1040,27 +1040,5 @@ namespace PropertyDependencyFramework_Tests
         }
 
         #endregion
-
-        private static PropertyChangeRecorder CreatePropertyChangeRecorder<TBindable, TProperty>(TBindable bindable,
-            Expression<Func<TBindable, TProperty>> propertyExpression)
-            where TBindable : INotifyPropertyChanged
-        {
-            var recorder = new PropertyChangeRecorder();
-
-            var compiledExpression = propertyExpression.Compile();
-            var initialValue = compiledExpression(bindable);
-
-            var propertyName = PropertyNameResolver.GetPropertyName(propertyExpression);
-            bindable.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == propertyName)
-                {
-                    recorder.NumberOfChanges++;
-                    recorder.NewValues.Add(compiledExpression(bindable));
-                }
-            };
-
-            return recorder;
-        }
     }
 }
