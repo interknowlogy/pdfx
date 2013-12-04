@@ -7,10 +7,10 @@ namespace PropertyDependencyFramework
 {
 	internal interface IBindableHiddenRegistrationAPI : INotifyPropertyChanged
 	{
-		void RegisterPropertyDependency<T, T1, T2>(T masterPropertyOwner, Expression<Func<T, T1>> masterProperty,
+        void RegisterPropertyDependency<T, T1, T2>(T masterPropertyOwner, Expression<Func<T, T1>> masterProperty,
 		                                           Expression<Func<T2>> dependentProperty) where T : INotifyPropertyChanged;
 
-		void RegisterPropertyDependency(INotifyPropertyChanged masterPropertyOwner, string masterPropertyName, string dependantPropertyName);
+        void RegisterPropertyDependency(INotifyPropertyChanged masterPropertyOwner, string masterPropertyName, string dependantPropertyName);
 		
 		void RegisterPropertyDependency(INotifyCollectionChanged masterPropertyOwnerCollection, string masterPropertyName, string dependantPropertyName);
 

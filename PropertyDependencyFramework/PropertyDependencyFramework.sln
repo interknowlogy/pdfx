@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PropertyDependencyFramework", "PropertyDependencyFramework\PropertyDependencyFramework.csproj", "{598C63C6-1099-44E7-8842-FA045524D0C4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PropertyDependencyFramework_WPF", "PropertyDependencyFramework_WPF\PropertyDependencyFramework_WPF.csproj", "{B023E98A-98C9-41BF-9F09-BB969FE19C65}"
