@@ -20,7 +20,7 @@ namespace PropertyDependencyFramework
             _typeRegistrationApi = typeRegistrationApi;
         }
 
-        public IPropertyDependencyTypeRegistration On<TSourceOwner, TSource, TProperty>(Expression<Func<TSourceOwner, TSource>> source, Expression<Func<TProperty>> sourceProperty) where TSource : INotifyPropertyChanged
+        public IPropertyDependencyTypeRegistration On<TSourceOwner, TProperty>(TSourceOwner sourceOwner, Expression<Func<TSourceOwner, INotifyPropertyChanged>> source, Expression<Func<TProperty>> sourceProperty)
         {
             return ThisDependsOn(source, sourceProperty);
         }

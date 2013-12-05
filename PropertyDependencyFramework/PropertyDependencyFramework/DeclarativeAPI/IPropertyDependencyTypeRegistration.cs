@@ -7,7 +7,7 @@ namespace PropertyDependencyFramework
     public interface IPropertyDependencyTypeRegistration
     {
         //TODO: New First Arg = "this" with matching type arg
-        IPropertyDependencyTypeRegistration On<TSourceOwner, TSource, TProperty>(Expression<Func<TSourceOwner, TSource>> source, Expression<Func<TProperty>> sourceProperty)
-            where TSource : INotifyPropertyChanged;
+        IPropertyDependencyTypeRegistration On<TSourceOwner, TProperty>(TSourceOwner sourceOwner,
+            Expression<Func<TSourceOwner, INotifyPropertyChanged>> source, Expression<Func<TProperty>> sourceProperty);
     }
 }

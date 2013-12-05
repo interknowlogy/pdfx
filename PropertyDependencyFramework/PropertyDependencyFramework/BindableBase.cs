@@ -33,8 +33,8 @@ namespace PropertyDependencyFramework
         protected BindableBase(bool useSmartPropertyChangeNotificationByDefault)
         {
             UseSmartPropertyChangeNotificationByDefault = useSmartPropertyChangeNotificationByDefault;
+            _thisType = GetType();
         }
-
 
         #region Private Fields
         private bool _disposed;
@@ -925,32 +925,32 @@ namespace PropertyDependencyFramework
         #region Declarative Property Dependency Type Registration API
         internal static Dictionary<Type, Dictionary<string, DependentPropertyTypeRegistrationImplementation>> _typeRegistrationProperties = new Dictionary<Type, Dictionary<string, DependentPropertyTypeRegistrationImplementation>>();
         internal static ITypeRegistrationAPI _typeRegistrationApi = new TypeRegistrationAPI();
-        protected static IDependentPropertyTypeRegistration TypeRegistrationProperty<T>(Type dependentType, Expression<Func<T>> dependentProperty)
-        {
-            string dependantPropertyName = PropertyNameResolver.GetPropertyName(dependentProperty);
+        private Type _thisType;
 
-            if (!_typeRegistrationProperties.ContainsKey(dependentType))
+        protected IDependentPropertyTypeRegistration TypeRegistrationProperty<TDependentPropertyType>(Expression<Func<TDependentPropertyType>> dependentProperty)
+        {
+            string dependentPropertyName = PropertyNameResolver.GetPropertyName(dependentProperty);
+
+            if (!_typeRegistrationProperties.ContainsKey(_thisType))
             {
-                _typeRegistrationProperties.Add(dependentType,
+                _typeRegistrationProperties.Add(_thisType,
                     new Dictionary<string, DependentPropertyTypeRegistrationImplementation>());
             }
 
-            Dictionary<string, DependentPropertyTypeRegistrationImplementation> dependentTypeProperties = _typeRegistrationProperties[dependentType];
+            Dictionary<string, DependentPropertyTypeRegistrationImplementation> dependentTypeProperties = _typeRegistrationProperties[_thisType];
 
-            if (!dependentTypeProperties.ContainsKey(dependantPropertyName))
+            if (!dependentTypeProperties.ContainsKey(dependentPropertyName))
             {
-                dependentTypeProperties.Add(dependantPropertyName, new DependentPropertyTypeRegistrationImplementation(dependentType, dependantPropertyName, _typeRegistrationApi));
+                dependentTypeProperties.Add(dependentPropertyName, new DependentPropertyTypeRegistrationImplementation(_thisType, dependentPropertyName, _typeRegistrationApi));
             }
 
-            return dependentTypeProperties[dependantPropertyName];
+            return dependentTypeProperties[dependentPropertyName];
         }
         #endregion
 
         protected void InitializePropertyDependencies()
         {
-            Type currentType = GetType();
-
-            if (!_typeRegistrationProperties.ContainsKey(currentType))
+            if (!_typeRegistrationProperties.ContainsKey(_thisType))
             {
                 foreach (Action propertyRegistration in GetPropertyRegistrations())
                 {
@@ -968,11 +968,10 @@ namespace PropertyDependencyFramework
 
         private void RegisterPropertyDependenciesForInstance()
         {
-            Type thisType = GetType();
-            if (!_typeRegistrationApi.DependenciesByType.ContainsKey(thisType))
+            if (!_typeRegistrationApi.DependenciesByType.ContainsKey(_thisType))
                 return;
 
-            TypeDependencies dependencies = _typeRegistrationApi.DependenciesByType[thisType];
+            TypeDependencies dependencies = _typeRegistrationApi.DependenciesByType[_thisType];
             foreach (SourceProvider sourceProvider in dependencies.SourceProviders.Values)
             {
                 INotifyPropertyChanged sourceInstance = sourceProvider.SourceRetrievalFunc(this);

@@ -667,14 +667,14 @@ namespace PropertyDependencyFramework_Tests
         private void RegisterDependentProp()
         {
             TypeRegistrationProperty(GetType(), () => DependentProp)
-                .Depends(p => p.On<MockBindableBase, MockBindableBase, decimal>(bindableBase => bindableBase, () => InputProp));
+                .Depends(p => p.On<MockBindableBase, MockBindableBase, decimal>(mockBindableBase => bindableBase, () => InputProp));
         }
         public decimal DependentProp
         {
             get
             {
                 //NOT TESTING CACHING
-                return InputProp;
+                return this.InputProp;
             }
         }
 
@@ -714,8 +714,8 @@ namespace PropertyDependencyFramework_Tests
         //NOTE: Number of registrations in this class matters for some tests.
         private void RegisterDependentProp()
         {
-            TypeRegistrationProperty(GetType(), () => DependentOnBindableBaseProp)
-                .Depends(p => p.On<MockBindableBaseDependentOnMockBindableBase, MockBindableBase, decimal>(bindableBase => bindableBase.InputBindableBase, () => InputBindableBase.DependentProp));
+            TypeRegistrationProperty(() => DependentOnBindableBaseProp)
+                .Depends(p => p.On(this, k => k.InputBindableBase, () => InputBindableBase.DependentProp));
         }
         public decimal DependentOnBindableBaseProp
         {
