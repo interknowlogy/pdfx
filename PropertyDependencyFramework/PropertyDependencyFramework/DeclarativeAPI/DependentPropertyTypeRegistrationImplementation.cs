@@ -22,7 +22,7 @@ namespace PropertyDependencyFramework
 
         public IPropertyDependencyTypeRegistration On<TSourceOwner, TProperty>(TSourceOwner sourceOwner, Expression<Func<TSourceOwner, INotifyPropertyChanged>> source, Expression<Func<TProperty>> sourceProperty)
         {
-            return ThisDependsOn(source, sourceProperty);
+            return ThisDependsOn(sourceOwner, source, sourceProperty);
         }
 
         private bool _registeredDependency;
@@ -37,10 +37,10 @@ namespace PropertyDependencyFramework
             return this;
         }
 
-        IPropertyDependencyTypeRegistration ThisDependsOn<TSourceOwner, TSource, TSourceProp>(Expression<Func<TSourceOwner, TSource>> source, Expression<Func<TSourceProp>> sourceProperty)
+        IPropertyDependencyTypeRegistration ThisDependsOn<TSourceOwner, TSource, TSourceProp>(TSourceOwner sourceOwner, Expression<Func<TSourceOwner, TSource>> source, Expression<Func<TSourceProp>> sourceProperty)
             where TSource : INotifyPropertyChanged
         {
-            _typeRegistrationApi.RegisterPropertyDependencyForType(source, sourceProperty, _dependentPropertyName, _dependentType);
+            _typeRegistrationApi.RegisterPropertyDependencyForType(sourceOwner, source, sourceProperty, _dependentPropertyName, _dependentType);
 
             return this;
         }

@@ -34,7 +34,7 @@ namespace PropertyDependencyFramework_Tests
 
             //Act is performed during Instantiation of target
 
-            Type expected = typeof(MockBindableBase);
+            Type expected = typeof (MockBindableBase);
 
             Type[] registeredTypes = BindableBase._typeRegistrationProperties.Keys.ToArray();
 
@@ -42,9 +42,12 @@ namespace PropertyDependencyFramework_Tests
         }
 
         [TestMethod]
-        public void TypeRegistrationProperties_SingleMockBindableBaseInstantiated_DependentPropertyTypeRegistrationImplementationCreatedForTypeProperties()
+        public void
+            TypeRegistrationProperties_SingleMockBindableBaseInstantiated_DependentPropertyTypeRegistrationImplementationCreatedForTypeProperties
+            ()
         {
-            Dictionary<Type, Dictionary<string, DependentPropertyTypeRegistrationImplementation>> target = BindableBase._typeRegistrationProperties;
+            Dictionary<Type, Dictionary<string, DependentPropertyTypeRegistrationImplementation>> target =
+                BindableBase._typeRegistrationProperties;
 
             //TODO: Figure out how to enforce this with all the static stuff going on...
             //if (target.Keys.Count > 0)
@@ -58,7 +61,7 @@ namespace PropertyDependencyFramework_Tests
             //TODO: Figure out how to enforce this with all the static stuff going on...
             //Assert.IsTrue(target.Keys.Count == 1);
 
-            Type expectedType = typeof(MockBindableBase);
+            Type expectedType = typeof (MockBindableBase);
             Dictionary<string, DependentPropertyTypeRegistrationImplementation> actual = target[expectedType];
 
             Assert.IsTrue(actual.Keys.Count == 1);
@@ -66,18 +69,20 @@ namespace PropertyDependencyFramework_Tests
             string expectedDependentPropertyName = "DependentProp";
             Assert.IsTrue(actual.ContainsKey(expectedDependentPropertyName));
 
-            DependentPropertyTypeRegistrationImplementation actualDependentPropertyTypeRegistrationImplementation = actual[expectedDependentPropertyName];
+            DependentPropertyTypeRegistrationImplementation actualDependentPropertyTypeRegistrationImplementation =
+                actual[expectedDependentPropertyName];
             Assert.IsNotNull(actualDependentPropertyTypeRegistrationImplementation);
         }
 
         [TestMethod]
         public void DependenciesByType_SingleMockBindableBaseInstantiated_CorrectRegistrationCreatedForType()
         {
-            Dictionary<Type, TypeDependencies> target = ((TypeRegistrationAPI)BindableBase._typeRegistrationApi).DependenciesByType;
+            Dictionary<Type, TypeDependencies> target =
+                ((TypeRegistrationAPI) BindableBase._typeRegistrationApi).DependenciesByType;
 
             var bindable = new MockBindableBase();
 
-            Type expectedType = typeof(MockBindableBase);
+            Type expectedType = typeof (MockBindableBase);
             Assert.IsTrue(target.ContainsKey(expectedType));
 
             TypeDependencies actualTypeDependencies = target[expectedType];
@@ -108,12 +113,13 @@ namespace PropertyDependencyFramework_Tests
         [TestMethod]
         public void DependenciesByType_TwoMockBindableBaseInstantiated_CorrectRegistrationCreatedForTypeAndNoDuplicates()
         {
-            Dictionary<Type, TypeDependencies> target = ((TypeRegistrationAPI)BindableBase._typeRegistrationApi).DependenciesByType;
+            Dictionary<Type, TypeDependencies> target =
+                ((TypeRegistrationAPI) BindableBase._typeRegistrationApi).DependenciesByType;
 
             var bindable1 = new MockBindableBase();
             var bindable2 = new MockBindableBase();
 
-            Type expectedType = typeof(MockBindableBase);
+            Type expectedType = typeof (MockBindableBase);
             Assert.IsTrue(target.ContainsKey(expectedType));
 
             TypeDependencies actualTypeDependencies = target[expectedType];
@@ -146,14 +152,17 @@ namespace PropertyDependencyFramework_Tests
         }
 
         [TestMethod]
-        public void DependenciesByType_SingleMockBindableBaseInstantiatedAndSingleMockBindableBaseDependentOnMockBindableBaseInstantiated_CorrectRegistrationCreatedForType()
+        public void
+            DependenciesByType_SingleMockBindableBaseInstantiatedAndSingleMockBindableBaseDependentOnMockBindableBaseInstantiated_CorrectRegistrationCreatedForType
+            ()
         {
-            Dictionary<Type, TypeDependencies> target = ((TypeRegistrationAPI)BindableBase._typeRegistrationApi).DependenciesByType;
+            Dictionary<Type, TypeDependencies> target =
+                ((TypeRegistrationAPI) BindableBase._typeRegistrationApi).DependenciesByType;
 
             var bindable1 = new MockBindableBase();
             var bindable2 = new MockBindableBaseDependentOnMockBindableBase(bindable1);
 
-            Type expectedType = typeof(MockBindableBase);
+            Type expectedType = typeof (MockBindableBase);
             Assert.IsTrue(target.ContainsKey(expectedType));
 
             TypeDependencies actualTypeDependencies = target[expectedType];
@@ -182,7 +191,7 @@ namespace PropertyDependencyFramework_Tests
 
             //***********************//
 
-            Type expectedType2 = typeof(MockBindableBaseDependentOnMockBindableBase);
+            Type expectedType2 = typeof (MockBindableBaseDependentOnMockBindableBase);
             Assert.IsTrue(target.ContainsKey(expectedType2));
 
             TypeDependencies actualTypeDependencies2 = target[expectedType2];
@@ -190,7 +199,8 @@ namespace PropertyDependencyFramework_Tests
 
             Assert.IsTrue(actualTypeDependencies2.SourceProviders.Count == 1);
 
-            SourceProvider actualSourceProvider2 = actualTypeDependencies2.SourceProviders[expectedType]; //Expecting the first BindableBase type
+            SourceProvider actualSourceProvider2 = actualTypeDependencies2.SourceProviders[expectedType];
+                //Expecting the first BindableBase type
             Assert.IsNotNull(actualSourceProvider2);
 
             Assert.IsTrue(actualSourceProvider2.SourceProperties.Count == 1);
@@ -210,18 +220,22 @@ namespace PropertyDependencyFramework_Tests
         }
 
         [TestMethod]
-        public void RegisterPropertyDependenciesForTypeInstance_SingleMockBindableBaseInstantiated_CorrectInstanceDependeciesRegistered()
+        public void
+            RegisterPropertyDependenciesForTypeInstance_SingleMockBindableBaseInstantiated_CorrectInstanceDependeciesRegistered
+            ()
         {
             var bindable = new MockBindableBase();
 
-            Dictionary<INotifyPropertyChanged, ObjectPropertyDependencyRegistration> target = bindable._propertyDependencies;
+            Dictionary<INotifyPropertyChanged, ObjectPropertyDependencyRegistration> target =
+                bindable._propertyDependencies;
             Assert.IsTrue(target.Count == 1);
 
             MockBindableBase expectedSourceInstance = bindable;
             INotifyPropertyChanged actualSourceInstance = target.Keys.First();
             Assert.AreSame(expectedSourceInstance, actualSourceInstance);
 
-            ObjectPropertyDependencyRegistration actualObjectPropertyDependencyRegistration = target[actualSourceInstance];
+            ObjectPropertyDependencyRegistration actualObjectPropertyDependencyRegistration =
+                target[actualSourceInstance];
             Assert.IsNotNull(actualObjectPropertyDependencyRegistration);
             Assert.IsTrue(actualObjectPropertyDependencyRegistration.Callbacks.Count == 0);
             Assert.IsTrue(actualObjectPropertyDependencyRegistration.PropertyDependencies.Count == 1);
@@ -243,7 +257,9 @@ namespace PropertyDependencyFramework_Tests
         }
 
         [TestMethod]
-        public void RegisterPropertyDependenciesForTypeInstance_SingleMockBindableBaseInstantiated_NotifyPropertyChangedSubscribedOnlyOnce()
+        public void
+            RegisterPropertyDependenciesForTypeInstance_SingleMockBindableBaseInstantiated_NotifyPropertyChangedSubscribedOnlyOnce
+            ()
         {
             var bindable = new MockBindableBase();
 
@@ -255,19 +271,23 @@ namespace PropertyDependencyFramework_Tests
         }
 
         [TestMethod]
-        public void RegisterPropertyDependenciesForTypeInstance_SingleMockBindableBaseInstantiatedAndSingleMockBindableBaseDependentOnMockBindableBaseInstantiated_CorrectInstanceDependeciesRegistered()
+        public void
+            RegisterPropertyDependenciesForTypeInstance_SingleMockBindableBaseInstantiatedAndSingleMockBindableBaseDependentOnMockBindableBaseInstantiated_CorrectInstanceDependeciesRegistered
+            ()
         {
             var bindable1 = new MockBindableBase();
             var bindable2 = new MockBindableBaseDependentOnMockBindableBase(bindable1);
 
-            Dictionary<INotifyPropertyChanged, ObjectPropertyDependencyRegistration> target1 = bindable1._propertyDependencies;
+            Dictionary<INotifyPropertyChanged, ObjectPropertyDependencyRegistration> target1 =
+                bindable1._propertyDependencies;
             Assert.IsTrue(target1.Count == 1);
 
             MockBindableBase expectedSourceInstance1 = bindable1;
             INotifyPropertyChanged actualSourceInstance1 = target1.Keys.First();
             Assert.AreSame(expectedSourceInstance1, actualSourceInstance1);
 
-            ObjectPropertyDependencyRegistration actualObjectPropertyDependencyRegistration1 = target1[actualSourceInstance1];
+            ObjectPropertyDependencyRegistration actualObjectPropertyDependencyRegistration1 =
+                target1[actualSourceInstance1];
             Assert.IsNotNull(actualObjectPropertyDependencyRegistration1);
             Assert.IsTrue(actualObjectPropertyDependencyRegistration1.Callbacks.Count == 0);
             Assert.IsTrue(actualObjectPropertyDependencyRegistration1.PropertyDependencies.Count == 1);
@@ -289,14 +309,16 @@ namespace PropertyDependencyFramework_Tests
 
 
 
-            Dictionary<INotifyPropertyChanged, ObjectPropertyDependencyRegistration> target2 = bindable2._propertyDependencies;
+            Dictionary<INotifyPropertyChanged, ObjectPropertyDependencyRegistration> target2 =
+                bindable2._propertyDependencies;
             Assert.IsTrue(target2.Count == 1);
 
 
             INotifyPropertyChanged actualSourceInstance2 = target2.Keys.First();
             Assert.AreSame(expectedSourceInstance1, actualSourceInstance2);
 
-            ObjectPropertyDependencyRegistration actualObjectPropertyDependencyRegistration2 = target2[actualSourceInstance2];
+            ObjectPropertyDependencyRegistration actualObjectPropertyDependencyRegistration2 =
+                target2[actualSourceInstance2];
             Assert.IsNotNull(actualObjectPropertyDependencyRegistration2);
             Assert.IsTrue(actualObjectPropertyDependencyRegistration2.Callbacks.Count == 0);
             Assert.IsTrue(actualObjectPropertyDependencyRegistration2.PropertyDependencies.Count == 1);
@@ -318,13 +340,16 @@ namespace PropertyDependencyFramework_Tests
         }
 
         [TestMethod]
-        public void RegisterPropertyDependenciesForTypeInstance_SingleMockBindableBaseInstantiatedAndSingleMockBindableBaseDependentOnMockBindableBaseInstantiated_NotifyPropertyChangedSubscribedOnlyOncePerInstance()
+        public void
+            RegisterPropertyDependenciesForTypeInstance_SingleMockBindableBaseInstantiatedAndSingleMockBindableBaseDependentOnMockBindableBaseInstantiated_NotifyPropertyChangedSubscribedOnlyOncePerInstance
+            ()
         {
             var bindable1 = new MockBindableBase();
             var bindable2 = new MockBindableBaseDependentOnMockBindableBase(bindable1);
 
             var target1 = PropertyChangeRecorder.CreatePropertyChangeRecorder(bindable1, b => b.DependentProp);
-            var target2 = PropertyChangeRecorder.CreatePropertyChangeRecorder(bindable2, b => b.DependentOnBindableBaseProp);
+            var target2 = PropertyChangeRecorder.CreatePropertyChangeRecorder(bindable2,
+                b => b.DependentOnBindableBaseProp);
 
             bindable1.InputProp = 1;
 
@@ -333,18 +358,22 @@ namespace PropertyDependencyFramework_Tests
         }
 
         [TestMethod]
-        public void RegisterPropertyDependenciesForTypeInstance_SingleMockMultipleDependenciesOnSelfBindableBaseInstantiated_CorrectInstanceDependeciesRegistered()
+        public void
+            RegisterPropertyDependenciesForTypeInstance_SingleMockMultipleDependenciesOnSelfBindableBaseInstantiated_CorrectInstanceDependeciesRegistered
+            ()
         {
             var bindable = new MockMultipleDependenciesOnSelfBindableBase();
 
-            Dictionary<INotifyPropertyChanged, ObjectPropertyDependencyRegistration> target = bindable._propertyDependencies;
+            Dictionary<INotifyPropertyChanged, ObjectPropertyDependencyRegistration> target =
+                bindable._propertyDependencies;
             Assert.IsTrue(target.Count == 1);
 
             MockMultipleDependenciesOnSelfBindableBase expectedSourceInstance = bindable;
             INotifyPropertyChanged actualSourceInstance = target.Keys.First();
             Assert.AreSame(expectedSourceInstance, actualSourceInstance);
 
-            ObjectPropertyDependencyRegistration actualObjectPropertyDependencyRegistration = target[actualSourceInstance];
+            ObjectPropertyDependencyRegistration actualObjectPropertyDependencyRegistration =
+                target[actualSourceInstance];
             Assert.IsNotNull(actualObjectPropertyDependencyRegistration);
             Assert.IsTrue(actualObjectPropertyDependencyRegistration.Callbacks.Count == 0);
             Assert.IsTrue(actualObjectPropertyDependencyRegistration.PropertyDependencies.Count == 1);
@@ -362,17 +391,21 @@ namespace PropertyDependencyFramework_Tests
 
             string expectedDependentPropertyNameA = "DependentProp";
             string expectedDependentPropertyNameB = "DependentProp2";
-            CollectionAssert.Contains(actualSourcePropertyDependencies.DependentProperties, expectedDependentPropertyNameA);
-            CollectionAssert.Contains(actualSourcePropertyDependencies.DependentProperties, expectedDependentPropertyNameB);
+            CollectionAssert.Contains(actualSourcePropertyDependencies.DependentProperties,
+                expectedDependentPropertyNameA);
+            CollectionAssert.Contains(actualSourcePropertyDependencies.DependentProperties,
+                expectedDependentPropertyNameB);
         }
 
         [TestMethod]
-        public void RegisterPropertyDependenciesForTypeInstance_SingleMockMultipleDependenciesOnSelfBindableBaseInstantiated_NotifyPropertyChangedSubscribedOnlyOnce()
+        public void
+            RegisterPropertyDependenciesForTypeInstance_SingleMockMultipleDependenciesOnSelfBindableBaseInstantiated_NotifyPropertyChangedSubscribedOnlyOnce
+            ()
         {
             var bindable = new MockMultipleDependenciesOnSelfBindableBase();
 
             var targetA = PropertyChangeRecorder.CreatePropertyChangeRecorder(bindable, b => b.DependentProp);
-            var targetB= PropertyChangeRecorder.CreatePropertyChangeRecorder(bindable, b => b.DependentProp2);
+            var targetB = PropertyChangeRecorder.CreatePropertyChangeRecorder(bindable, b => b.DependentProp2);
 
             bindable.InputProp = 1;
 
@@ -381,19 +414,24 @@ namespace PropertyDependencyFramework_Tests
         }
 
         [TestMethod]
-        public void RegisterPropertyDependenciesForTypeInstance_SingleMockMultipleDependenciesOnSelfBindableBaseInstantiatedAndSingleMockBindableBaseMultipleDependentciesOnMockMultipleDependenciesOnSelfBindableBaseInstantiated_CorrectInstanceDependeciesRegistered()
+        public void
+            RegisterPropertyDependenciesForTypeInstance_SingleMockMultipleDependenciesOnSelfBindableBaseInstantiatedAndSingleMockBindableBaseMultipleDependentciesOnMockMultipleDependenciesOnSelfBindableBaseInstantiated_CorrectInstanceDependeciesRegistered
+            ()
         {
             var bindable1 = new MockMultipleDependenciesOnSelfBindableBase();
-            var bindable2 = new MockBindableBaseMultipleDependentciesOnMockMultipleDependenciesOnSelfBindableBase(bindable1);
+            var bindable2 =
+                new MockBindableBaseMultipleDependentciesOnMockMultipleDependenciesOnSelfBindableBase(bindable1);
 
-            Dictionary<INotifyPropertyChanged, ObjectPropertyDependencyRegistration> target1 = bindable1._propertyDependencies;
+            Dictionary<INotifyPropertyChanged, ObjectPropertyDependencyRegistration> target1 =
+                bindable1._propertyDependencies;
             Assert.IsTrue(target1.Count == 1);
 
             MockMultipleDependenciesOnSelfBindableBase expectedSourceInstance1 = bindable1;
             INotifyPropertyChanged actualSourceInstance1 = target1.Keys.First();
             Assert.AreSame(expectedSourceInstance1, actualSourceInstance1);
 
-            ObjectPropertyDependencyRegistration actualObjectPropertyDependencyRegistration1 = target1[actualSourceInstance1];
+            ObjectPropertyDependencyRegistration actualObjectPropertyDependencyRegistration1 =
+                target1[actualSourceInstance1];
             Assert.IsNotNull(actualObjectPropertyDependencyRegistration1);
             Assert.IsTrue(actualObjectPropertyDependencyRegistration1.Callbacks.Count == 0);
             Assert.IsTrue(actualObjectPropertyDependencyRegistration1.PropertyDependencies.Count == 1);
@@ -411,19 +449,23 @@ namespace PropertyDependencyFramework_Tests
 
             string expectedDependentPropertyName1A = "DependentProp";
             string expectedDependentPropertyName1B = "DependentProp2";
-            CollectionAssert.Contains(actualSourcePropertyDependencies1.DependentProperties, expectedDependentPropertyName1A);
-            CollectionAssert.Contains(actualSourcePropertyDependencies1.DependentProperties, expectedDependentPropertyName1B);
+            CollectionAssert.Contains(actualSourcePropertyDependencies1.DependentProperties,
+                expectedDependentPropertyName1A);
+            CollectionAssert.Contains(actualSourcePropertyDependencies1.DependentProperties,
+                expectedDependentPropertyName1B);
 
 
 
-            Dictionary<INotifyPropertyChanged, ObjectPropertyDependencyRegistration> target2 = bindable2._propertyDependencies;
+            Dictionary<INotifyPropertyChanged, ObjectPropertyDependencyRegistration> target2 =
+                bindable2._propertyDependencies;
             Assert.IsTrue(target2.Count == 1);
 
 
             INotifyPropertyChanged actualSourceInstance2 = target2.Keys.First();
             Assert.AreSame(expectedSourceInstance1, actualSourceInstance2);
 
-            ObjectPropertyDependencyRegistration actualObjectPropertyDependencyRegistration2 = target2[actualSourceInstance2];
+            ObjectPropertyDependencyRegistration actualObjectPropertyDependencyRegistration2 =
+                target2[actualSourceInstance2];
             Assert.IsNotNull(actualObjectPropertyDependencyRegistration2);
             Assert.IsTrue(actualObjectPropertyDependencyRegistration2.Callbacks.Count == 0);
             Assert.IsTrue(actualObjectPropertyDependencyRegistration2.PropertyDependencies.Count == 1);
@@ -441,20 +483,27 @@ namespace PropertyDependencyFramework_Tests
 
             string expectedDependentPropertyName2A = "DependentOnBindableBaseProp";
             string expectedDependentPropertyName2B = "DependentOnBindableBaseProp2";
-            CollectionAssert.Contains(actualSourcePropertyDependencies2.DependentProperties, expectedDependentPropertyName2A);
-            CollectionAssert.Contains(actualSourcePropertyDependencies2.DependentProperties, expectedDependentPropertyName2B);
+            CollectionAssert.Contains(actualSourcePropertyDependencies2.DependentProperties,
+                expectedDependentPropertyName2A);
+            CollectionAssert.Contains(actualSourcePropertyDependencies2.DependentProperties,
+                expectedDependentPropertyName2B);
         }
 
         [TestMethod]
-        public void RegisterPropertyDependenciesForTypeInstance_SingleMockMultipleDependenciesOnSelfBindableBaseInstantiatedAndSingleMockBindableBaseMultipleDependentciesOnMockMultipleDependenciesOnSelfBindableBaseInstantiated_NotifyPropertyChangedSubscribedOnlyOncePerInstance()
+        public void
+            RegisterPropertyDependenciesForTypeInstance_SingleMockMultipleDependenciesOnSelfBindableBaseInstantiatedAndSingleMockBindableBaseMultipleDependentciesOnMockMultipleDependenciesOnSelfBindableBaseInstantiated_NotifyPropertyChangedSubscribedOnlyOncePerInstance
+            ()
         {
             var bindable1 = new MockMultipleDependenciesOnSelfBindableBase();
-            var bindable2 = new MockBindableBaseMultipleDependentciesOnMockMultipleDependenciesOnSelfBindableBase(bindable1);
+            var bindable2 =
+                new MockBindableBaseMultipleDependentciesOnMockMultipleDependenciesOnSelfBindableBase(bindable1);
 
             var target1A = PropertyChangeRecorder.CreatePropertyChangeRecorder(bindable1, b => b.DependentProp);
             var target1B = PropertyChangeRecorder.CreatePropertyChangeRecorder(bindable1, b => b.DependentProp2);
-            var target2A = PropertyChangeRecorder.CreatePropertyChangeRecorder(bindable2, b => b.DependentOnBindableBaseProp);
-            var target2B = PropertyChangeRecorder.CreatePropertyChangeRecorder(bindable2, b => b.DependentOnBindableBaseProp2);
+            var target2A = PropertyChangeRecorder.CreatePropertyChangeRecorder(bindable2,
+                b => b.DependentOnBindableBaseProp);
+            var target2B = PropertyChangeRecorder.CreatePropertyChangeRecorder(bindable2,
+                b => b.DependentOnBindableBaseProp2);
 
             bindable1.InputProp = 1;
 
@@ -465,18 +514,22 @@ namespace PropertyDependencyFramework_Tests
         }
 
         [TestMethod]
-        public void RegisterPropertyDependenciesForTypeInstance_SingleMockMultipleDependenciesAndMultipleInputsOnSelfBindableBaseInstantiated_CorrectInstanceDependeciesRegistered()
+        public void
+            RegisterPropertyDependenciesForTypeInstance_SingleMockMultipleDependenciesAndMultipleInputsOnSelfBindableBaseInstantiated_CorrectInstanceDependeciesRegistered
+            ()
         {
             var bindable = new MockMultipleDependenciesAndMultipleInputsOnSelfBindableBase();
 
-            Dictionary<INotifyPropertyChanged, ObjectPropertyDependencyRegistration> target = bindable._propertyDependencies;
+            Dictionary<INotifyPropertyChanged, ObjectPropertyDependencyRegistration> target =
+                bindable._propertyDependencies;
             Assert.IsTrue(target.Count == 1);
 
             MockMultipleDependenciesAndMultipleInputsOnSelfBindableBase expectedSourceInstance = bindable;
             INotifyPropertyChanged actualSourceInstance = target.Keys.First();
             Assert.AreSame(expectedSourceInstance, actualSourceInstance);
 
-            ObjectPropertyDependencyRegistration actualObjectPropertyDependencyRegistration = target[actualSourceInstance];
+            ObjectPropertyDependencyRegistration actualObjectPropertyDependencyRegistration =
+                target[actualSourceInstance];
             Assert.IsNotNull(actualObjectPropertyDependencyRegistration);
             Assert.IsTrue(actualObjectPropertyDependencyRegistration.Callbacks.Count == 0);
             Assert.IsTrue(actualObjectPropertyDependencyRegistration.PropertyDependencies.Count == 2);
@@ -488,7 +541,7 @@ namespace PropertyDependencyFramework_Tests
             CollectionAssert.Contains(actualObjectPropertyDependencyRegistration.PropertyDependencies.Keys,
                 expectedSourcePropertyNameB);
 
-       
+
             PropertyDependencies actualSourcePropertyDependenciesA =
                 actualObjectPropertyDependencyRegistration.PropertyDependencies[expectedSourcePropertyNameA];
             Assert.IsNotNull(actualSourcePropertyDependenciesA);
@@ -514,7 +567,9 @@ namespace PropertyDependencyFramework_Tests
         }
 
         [TestMethod]
-        public void RegisterPropertyDependenciesForTypeInstance_SingleMockMultipleDependenciesAndMultipleInputsOnSelfBindableBaseInstantiated_NotifyPropertyChangedSubscribedOnlyOnce()
+        public void
+            RegisterPropertyDependenciesForTypeInstance_SingleMockMultipleDependenciesAndMultipleInputsOnSelfBindableBaseInstantiated_NotifyPropertyChangedSubscribedOnlyOnce
+            ()
         {
             var bindable = new MockMultipleDependenciesAndMultipleInputsOnSelfBindableBase();
 
@@ -529,19 +584,25 @@ namespace PropertyDependencyFramework_Tests
         }
 
         [TestMethod]
-        public void RegisterPropertyDependenciesForTypeInstance_SingleMockMultipleDependenciesAndMultipleInputsOnSelfBindableBaseInstantiatedAndSingleMockBindableBaseMultipleDependentciesOnMockMultipleDependenciesAndMultipleInputsOnSelfBindableBaseInstantiated_CorrectInstanceDependeciesRegistered()
+        public void
+            RegisterPropertyDependenciesForTypeInstance_SingleMockMultipleDependenciesAndMultipleInputsOnSelfBindableBaseInstantiatedAndSingleMockBindableBaseMultipleDependentciesOnMockMultipleDependenciesAndMultipleInputsOnSelfBindableBaseInstantiated_CorrectInstanceDependeciesRegistered
+            ()
         {
             var bindable1 = new MockMultipleDependenciesAndMultipleInputsOnSelfBindableBase();
-            var bindable2 = new MockBindableBaseMultipleDependentciesOnMockMultipleDependenciesAndMultipleInputsOnSelfBindableBase(bindable1);
+            var bindable2 =
+                new MockBindableBaseMultipleDependentciesOnMockMultipleDependenciesAndMultipleInputsOnSelfBindableBase(
+                    bindable1);
 
-            Dictionary<INotifyPropertyChanged, ObjectPropertyDependencyRegistration> target1 = bindable1._propertyDependencies;
+            Dictionary<INotifyPropertyChanged, ObjectPropertyDependencyRegistration> target1 =
+                bindable1._propertyDependencies;
             Assert.IsTrue(target1.Count == 1);
 
             MockMultipleDependenciesAndMultipleInputsOnSelfBindableBase expectedSourceInstance = bindable1;
             INotifyPropertyChanged actualSourceInstance1 = target1.Keys.First();
             Assert.AreSame(expectedSourceInstance, actualSourceInstance1);
 
-            ObjectPropertyDependencyRegistration actualObjectPropertyDependencyRegistration1 = target1[actualSourceInstance1];
+            ObjectPropertyDependencyRegistration actualObjectPropertyDependencyRegistration1 =
+                target1[actualSourceInstance1];
             Assert.IsNotNull(actualObjectPropertyDependencyRegistration1);
             Assert.IsTrue(actualObjectPropertyDependencyRegistration1.Callbacks.Count == 0);
             Assert.IsTrue(actualObjectPropertyDependencyRegistration1.PropertyDependencies.Count == 2);
@@ -577,14 +638,16 @@ namespace PropertyDependencyFramework_Tests
 
 
 
-            Dictionary<INotifyPropertyChanged, ObjectPropertyDependencyRegistration> target2 = bindable2._propertyDependencies;
+            Dictionary<INotifyPropertyChanged, ObjectPropertyDependencyRegistration> target2 =
+                bindable2._propertyDependencies;
             Assert.IsTrue(target2.Count == 1);
 
 
             INotifyPropertyChanged actualSourceInstance2 = target2.Keys.First();
             Assert.AreSame(expectedSourceInstance, actualSourceInstance2);
 
-            ObjectPropertyDependencyRegistration actualObjectPropertyDependencyRegistration2 = target2[actualSourceInstance2];
+            ObjectPropertyDependencyRegistration actualObjectPropertyDependencyRegistration2 =
+                target2[actualSourceInstance2];
             Assert.IsNotNull(actualObjectPropertyDependencyRegistration2);
             Assert.IsTrue(actualObjectPropertyDependencyRegistration2.Callbacks.Count == 0);
             Assert.IsTrue(actualObjectPropertyDependencyRegistration2.PropertyDependencies.Count == 2);
@@ -609,7 +672,7 @@ namespace PropertyDependencyFramework_Tests
 
 
             PropertyDependencies actualSourcePropertyDependencies2B =
-                 actualObjectPropertyDependencyRegistration2.PropertyDependencies[expectedSourcePropertyName2B];
+                actualObjectPropertyDependencyRegistration2.PropertyDependencies[expectedSourcePropertyName2B];
             Assert.IsNotNull(actualSourcePropertyDependencies2B);
             Assert.IsTrue(actualSourcePropertyDependencies2B.Callbacks.Count == 0);
             Assert.IsTrue(actualSourcePropertyDependencies2B.DependentProperties.Count == 1);
@@ -620,15 +683,21 @@ namespace PropertyDependencyFramework_Tests
         }
 
         [TestMethod]
-        public void RegisterPropertyDependenciesForTypeInstance_SingleMockMultipleDependenciesAndMultipleInputsOnSelfBindableBaseInstantiatedAndSingleMockBindableBaseMultipleDependentciesOnMockMultipleDependenciesAndMultipleInputsOnSelfBindableBaseInstantiated_NotifyPropertyChangedSubscribedOnlyOncePerInstance()
+        public void
+            RegisterPropertyDependenciesForTypeInstance_SingleMockMultipleDependenciesAndMultipleInputsOnSelfBindableBaseInstantiatedAndSingleMockBindableBaseMultipleDependentciesOnMockMultipleDependenciesAndMultipleInputsOnSelfBindableBaseInstantiated_NotifyPropertyChangedSubscribedOnlyOncePerInstance
+            ()
         {
             var bindable1 = new MockMultipleDependenciesAndMultipleInputsOnSelfBindableBase();
-            var bindable2 = new MockBindableBaseMultipleDependentciesOnMockMultipleDependenciesAndMultipleInputsOnSelfBindableBase(bindable1);
+            var bindable2 =
+                new MockBindableBaseMultipleDependentciesOnMockMultipleDependenciesAndMultipleInputsOnSelfBindableBase(
+                    bindable1);
 
             var target1A = PropertyChangeRecorder.CreatePropertyChangeRecorder(bindable1, b => b.DependentProp);
             var target1B = PropertyChangeRecorder.CreatePropertyChangeRecorder(bindable1, b => b.DependentProp2);
-            var target2A = PropertyChangeRecorder.CreatePropertyChangeRecorder(bindable2, b => b.DependentOnBindableBaseProp);
-            var target2B = PropertyChangeRecorder.CreatePropertyChangeRecorder(bindable2, b => b.DependentOnBindableBaseProp2);
+            var target2A = PropertyChangeRecorder.CreatePropertyChangeRecorder(bindable2,
+                b => b.DependentOnBindableBaseProp);
+            var target2B = PropertyChangeRecorder.CreatePropertyChangeRecorder(bindable2,
+                b => b.DependentOnBindableBaseProp2);
 
             bindable1.InputProp = 1;
             bindable1.InputProp2 = 2;
@@ -652,7 +721,7 @@ namespace PropertyDependencyFramework_Tests
 
         protected override Action[] GetPropertyRegistrations()
         {
-            return new Action[] { () => ActionCount++ };
+            return new Action[] {() => ActionCount++};
         }
     }
 
@@ -666,9 +735,10 @@ namespace PropertyDependencyFramework_Tests
         //NOTE: Number of registrations in this class matters for some tests.
         private void RegisterDependentProp()
         {
-            TypeRegistrationProperty(GetType(), () => DependentProp)
-                .Depends(p => p.On<MockBindableBase, MockBindableBase, decimal>(mockBindableBase => bindableBase, () => InputProp));
+            TypeRegistrationProperty(() => DependentProp)
+                .Depends(p => p.On(this, k => k, () => InputProp));
         }
+
         public decimal DependentProp
         {
             get
@@ -680,6 +750,7 @@ namespace PropertyDependencyFramework_Tests
 
 
         private decimal _inputProp;
+
         public decimal InputProp
         {
             get { return _inputProp; }
@@ -707,7 +778,7 @@ namespace PropertyDependencyFramework_Tests
         public MockBindableBaseDependentOnMockBindableBase(MockBindableBase inputBindableBase)
         {
             InputBindableBase = inputBindableBase;
-            
+
             InitializePropertyDependencies();
         }
 
@@ -717,6 +788,7 @@ namespace PropertyDependencyFramework_Tests
             TypeRegistrationProperty(() => DependentOnBindableBaseProp)
                 .Depends(p => p.On(this, k => k.InputBindableBase, () => InputBindableBase.DependentProp));
         }
+
         public decimal DependentOnBindableBaseProp
         {
             get
@@ -727,6 +799,7 @@ namespace PropertyDependencyFramework_Tests
         }
 
         private MockBindableBase _inputBindableBase;
+
         public MockBindableBase InputBindableBase
         {
             get { return _inputBindableBase; }
@@ -759,9 +832,10 @@ namespace PropertyDependencyFramework_Tests
         //NOTE: Number of registrations in this class matters for some tests.
         private void RegisterDependentProp()
         {
-            TypeRegistrationProperty(GetType(), () => DependentProp)
-                .Depends(p => p.On<MockMultipleDependenciesOnSelfBindableBase, MockMultipleDependenciesOnSelfBindableBase, decimal>(bindableBase => bindableBase, () => InputProp));
+            TypeRegistrationProperty(() => DependentProp)
+                .Depends(p => p.On(this, bindableBase => bindableBase, () => InputProp));
         }
+
         public decimal DependentProp
         {
             get
@@ -773,10 +847,11 @@ namespace PropertyDependencyFramework_Tests
 
         private void RegisterDependentProp2()
         {
-            TypeRegistrationProperty(GetType(), () => DependentProp2)
-                .Depends(p => p.On<MockMultipleDependenciesOnSelfBindableBase, MockMultipleDependenciesOnSelfBindableBase, decimal>(bindableBase => bindableBase, () => InputProp));
+            TypeRegistrationProperty(() => DependentProp2)
+                .Depends(p => p.On(this, bindableBase => bindableBase, () => InputProp));
 
         }
+
         public decimal DependentProp2
         {
             get
@@ -787,6 +862,7 @@ namespace PropertyDependencyFramework_Tests
 
 
         private decimal _inputProp;
+
         public decimal InputProp
         {
             get { return _inputProp; }
@@ -812,20 +888,23 @@ namespace PropertyDependencyFramework_Tests
 
     public class MockBindableBaseMultipleDependentciesOnMockMultipleDependenciesOnSelfBindableBase : BindableBase
     {
-        public MockBindableBaseMultipleDependentciesOnMockMultipleDependenciesOnSelfBindableBase(MockMultipleDependenciesOnSelfBindableBase inputBindableBase)
+        public MockBindableBaseMultipleDependentciesOnMockMultipleDependenciesOnSelfBindableBase(
+            MockMultipleDependenciesOnSelfBindableBase inputBindableBase)
         {
             InputBindableBase = inputBindableBase;
-        
+
             InitializePropertyDependencies();
         }
 
         //NOTE: Number of registrations in this class matters for some tests.
         private void RegisterDependentOnBindableBaseProp()
         {
-            TypeRegistrationProperty(GetType(), () => DependentOnBindableBaseProp)
-                .Depends(p => p.On<MockBindableBaseMultipleDependentciesOnMockMultipleDependenciesOnSelfBindableBase, MockMultipleDependenciesOnSelfBindableBase, decimal>(
-                    bindableBase => bindableBase.InputBindableBase, () => InputBindableBase.DependentProp));
+            TypeRegistrationProperty(() => DependentOnBindableBaseProp)
+                .Depends(
+                    p =>
+                        p.On(this, bindableBase => bindableBase.InputBindableBase, () => InputBindableBase.DependentProp));
         }
+
         public decimal DependentOnBindableBaseProp
         {
             get
@@ -834,12 +913,15 @@ namespace PropertyDependencyFramework_Tests
                 return InputBindableBase.DependentProp;
             }
         }
+
         private void RegisterDependentOnBindableBaseProp2()
         {
-            TypeRegistrationProperty(GetType(), () => DependentOnBindableBaseProp2)
-                .Depends(p => p.On<MockBindableBaseMultipleDependentciesOnMockMultipleDependenciesOnSelfBindableBase, MockMultipleDependenciesOnSelfBindableBase, decimal>(
-                    bindableBase => bindableBase.InputBindableBase, () => InputBindableBase.DependentProp));
+            TypeRegistrationProperty(() => DependentOnBindableBaseProp2)
+                .Depends(
+                    p =>
+                        p.On(this, bindableBase => bindableBase.InputBindableBase, () => InputBindableBase.DependentProp));
         }
+
         public decimal DependentOnBindableBaseProp2
         {
             get
@@ -851,6 +933,7 @@ namespace PropertyDependencyFramework_Tests
 
 
         private MockMultipleDependenciesOnSelfBindableBase _inputBindableBase;
+
         public MockMultipleDependenciesOnSelfBindableBase InputBindableBase
         {
             get { return _inputBindableBase; }
@@ -878,15 +961,16 @@ namespace PropertyDependencyFramework_Tests
     {
         public MockMultipleDependenciesAndMultipleInputsOnSelfBindableBase()
         {
-            InitializePropertyDependencies();            
+            InitializePropertyDependencies();
         }
 
         //NOTE: Number of registrations in this class matters for some tests.
         private void RegisterDependentProp()
         {
-            TypeRegistrationProperty(GetType(), () => DependentProp)
-                .Depends(p => p.On<MockMultipleDependenciesAndMultipleInputsOnSelfBindableBase, MockMultipleDependenciesAndMultipleInputsOnSelfBindableBase, decimal>(bindableBase => bindableBase, () => InputProp));
+            TypeRegistrationProperty(() => DependentProp)
+                .Depends(p => p.On(this, bindableBase => bindableBase, () => InputProp));
         }
+
         public decimal DependentProp
         {
             get
@@ -898,10 +982,11 @@ namespace PropertyDependencyFramework_Tests
 
         private void RegisterDependentProp2()
         {
-            TypeRegistrationProperty(GetType(), () => DependentProp2)
-                .Depends(p => p.On<MockMultipleDependenciesAndMultipleInputsOnSelfBindableBase, MockMultipleDependenciesAndMultipleInputsOnSelfBindableBase, decimal>(bindableBase => bindableBase, () => InputProp2));
+            TypeRegistrationProperty(() => DependentProp2)
+                .Depends(p => p.On(this, bindableBase => bindableBase, () => InputProp2));
 
         }
+
         public decimal DependentProp2
         {
             get
@@ -912,6 +997,7 @@ namespace PropertyDependencyFramework_Tests
 
 
         private decimal _inputProp;
+
         public decimal InputProp
         {
             get { return _inputProp; }
@@ -926,6 +1012,7 @@ namespace PropertyDependencyFramework_Tests
         }
 
         private decimal _inputProp2;
+
         public decimal InputProp2
         {
             get { return _inputProp2; }
@@ -949,9 +1036,11 @@ namespace PropertyDependencyFramework_Tests
         }
     }
 
-    public class MockBindableBaseMultipleDependentciesOnMockMultipleDependenciesAndMultipleInputsOnSelfBindableBase : BindableBase
+    public class MockBindableBaseMultipleDependentciesOnMockMultipleDependenciesAndMultipleInputsOnSelfBindableBase :
+        BindableBase
     {
-        public MockBindableBaseMultipleDependentciesOnMockMultipleDependenciesAndMultipleInputsOnSelfBindableBase(MockMultipleDependenciesAndMultipleInputsOnSelfBindableBase inputBindableBase)
+        public MockBindableBaseMultipleDependentciesOnMockMultipleDependenciesAndMultipleInputsOnSelfBindableBase(
+            MockMultipleDependenciesAndMultipleInputsOnSelfBindableBase inputBindableBase)
         {
             InputBindableBase = inputBindableBase;
 
@@ -961,10 +1050,12 @@ namespace PropertyDependencyFramework_Tests
         //NOTE: Number of registrations in this class matters for some tests.
         private void RegisterDependentOnBindableBaseProp()
         {
-            TypeRegistrationProperty(GetType(), () => DependentOnBindableBaseProp)
-                .Depends(p => p.On<MockBindableBaseMultipleDependentciesOnMockMultipleDependenciesAndMultipleInputsOnSelfBindableBase, MockMultipleDependenciesAndMultipleInputsOnSelfBindableBase, decimal>(
-                    bindableBase => bindableBase.InputBindableBase, () => InputBindableBase.DependentProp));
+            TypeRegistrationProperty(() => DependentOnBindableBaseProp)
+                .Depends(
+                    p =>
+                        p.On(this, bindableBase => bindableBase.InputBindableBase, () => InputBindableBase.DependentProp));
         }
+
         public decimal DependentOnBindableBaseProp
         {
             get
@@ -973,12 +1064,16 @@ namespace PropertyDependencyFramework_Tests
                 return InputBindableBase.DependentProp;
             }
         }
+
         private void RegisterDependentOnBindableBaseProp2()
         {
-            TypeRegistrationProperty(GetType(), () => DependentOnBindableBaseProp2)
-                .Depends(p => p.On<MockBindableBaseMultipleDependentciesOnMockMultipleDependenciesAndMultipleInputsOnSelfBindableBase, MockMultipleDependenciesAndMultipleInputsOnSelfBindableBase, decimal>(
-                    bindableBase => bindableBase.InputBindableBase, () => InputBindableBase.DependentProp2));
+            TypeRegistrationProperty(() => DependentOnBindableBaseProp2)
+                .Depends(
+                    p =>
+                        p.On(this, bindableBase => bindableBase.InputBindableBase,
+                            () => InputBindableBase.DependentProp2));
         }
+
         public decimal DependentOnBindableBaseProp2
         {
             get
@@ -990,6 +1085,7 @@ namespace PropertyDependencyFramework_Tests
 
 
         private MockMultipleDependenciesAndMultipleInputsOnSelfBindableBase _inputBindableBase;
+
         public MockMultipleDependenciesAndMultipleInputsOnSelfBindableBase InputBindableBase
         {
             get { return _inputBindableBase; }

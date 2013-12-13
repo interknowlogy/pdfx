@@ -11,11 +11,13 @@ namespace PropertyDependencyFramework
         private readonly Dictionary<Type, TypeDependencies> _dependenciesByType = new Dictionary<Type, TypeDependencies>();
         public Dictionary<Type, TypeDependencies> DependenciesByType { get { return _dependenciesByType; } }
 
-        public void RegisterPropertyDependencyForType<TSourceOwner, TSource, TSourceProp>(Expression<Func<TSourceOwner, TSource>> sourceExpression, Expression<Func<TSourceProp>> sourcePropertyExpression,
+        public void RegisterPropertyDependencyForType<TSourceOwner, TSource, TSourceProp>(TSourceOwner sourceOwner, Expression<Func<TSourceOwner, TSource>> sourceExpression, Expression<Func<TSourceProp>> sourcePropertyExpression,
             string dependentPropertyName, Type dependentType)
             where TSource : INotifyPropertyChanged
         {
-            Type sourceType = typeof(TSource);
+            Func<object, INotifyPropertyChanged> sourceRetrievalFunc = sourceOwnerInstance => sourceExpression.Compile()((TSourceOwner)sourceOwnerInstance);
+
+            Type sourceType = sourceRetrievalFunc(sourceOwner).GetType();
             string sourcePropertyName = PropertyNameResolver.GetPropertyName(sourcePropertyExpression);
 
 
@@ -28,7 +30,7 @@ namespace PropertyDependencyFramework
 
             if (!typeDependencies.SourceProviders.ContainsKey(sourceType))
             {
-                typeDependencies.SourceProviders.Add(sourceType, new SourceProvider(sourceOwner => sourceExpression.Compile()((TSourceOwner)sourceOwner)));
+                typeDependencies.SourceProviders.Add(sourceType, new SourceProvider(sourceRetrievalFunc));
             }
 
             SourceProvider sourceProvider = typeDependencies.SourceProviders[sourceType];
