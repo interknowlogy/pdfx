@@ -34,7 +34,7 @@ namespace PropertyDependencyFramework_Tests
 
             //Act is performed during Instantiation of target
 
-            Type expected = typeof (MockBindableBase);
+            Type expected = typeof(MockBindableBase);
 
             Type[] registeredTypes = BindableBase._typeRegistrationProperties.Keys.ToArray();
 
@@ -61,7 +61,7 @@ namespace PropertyDependencyFramework_Tests
             //TODO: Figure out how to enforce this with all the static stuff going on...
             //Assert.IsTrue(target.Keys.Count == 1);
 
-            Type expectedType = typeof (MockBindableBase);
+            Type expectedType = typeof(MockBindableBase);
             Dictionary<string, DependentPropertyTypeRegistrationImplementation> actual = target[expectedType];
 
             Assert.IsTrue(actual.Keys.Count == 1);
@@ -78,11 +78,11 @@ namespace PropertyDependencyFramework_Tests
         public void DependenciesByType_SingleMockBindableBaseInstantiated_CorrectRegistrationCreatedForType()
         {
             Dictionary<Type, TypeDependencies> target =
-                ((TypeRegistrationAPI) BindableBase._typeRegistrationApi).DependenciesByType;
+                ((TypeRegistrationAPI)BindableBase._typeRegistrationApi).DependenciesByType;
 
             var bindable = new MockBindableBase();
 
-            Type expectedType = typeof (MockBindableBase);
+            Type expectedType = typeof(MockBindableBase);
             Assert.IsTrue(target.ContainsKey(expectedType));
 
             TypeDependencies actualTypeDependencies = target[expectedType];
@@ -114,12 +114,12 @@ namespace PropertyDependencyFramework_Tests
         public void DependenciesByType_TwoMockBindableBaseInstantiated_CorrectRegistrationCreatedForTypeAndNoDuplicates()
         {
             Dictionary<Type, TypeDependencies> target =
-                ((TypeRegistrationAPI) BindableBase._typeRegistrationApi).DependenciesByType;
+                ((TypeRegistrationAPI)BindableBase._typeRegistrationApi).DependenciesByType;
 
             var bindable1 = new MockBindableBase();
             var bindable2 = new MockBindableBase();
 
-            Type expectedType = typeof (MockBindableBase);
+            Type expectedType = typeof(MockBindableBase);
             Assert.IsTrue(target.ContainsKey(expectedType));
 
             TypeDependencies actualTypeDependencies = target[expectedType];
@@ -157,12 +157,12 @@ namespace PropertyDependencyFramework_Tests
             ()
         {
             Dictionary<Type, TypeDependencies> target =
-                ((TypeRegistrationAPI) BindableBase._typeRegistrationApi).DependenciesByType;
+                ((TypeRegistrationAPI)BindableBase._typeRegistrationApi).DependenciesByType;
 
             var bindable1 = new MockBindableBase();
             var bindable2 = new MockBindableBaseDependentOnMockBindableBase(bindable1);
 
-            Type expectedType = typeof (MockBindableBase);
+            Type expectedType = typeof(MockBindableBase);
             Assert.IsTrue(target.ContainsKey(expectedType));
 
             TypeDependencies actualTypeDependencies = target[expectedType];
@@ -191,7 +191,7 @@ namespace PropertyDependencyFramework_Tests
 
             //***********************//
 
-            Type expectedType2 = typeof (MockBindableBaseDependentOnMockBindableBase);
+            Type expectedType2 = typeof(MockBindableBaseDependentOnMockBindableBase);
             Assert.IsTrue(target.ContainsKey(expectedType2));
 
             TypeDependencies actualTypeDependencies2 = target[expectedType2];
@@ -200,7 +200,7 @@ namespace PropertyDependencyFramework_Tests
             Assert.IsTrue(actualTypeDependencies2.SourceProviders.Count == 1);
 
             SourceProvider actualSourceProvider2 = actualTypeDependencies2.SourceProviders[expectedType];
-                //Expecting the first BindableBase type
+            //Expecting the first BindableBase type
             Assert.IsNotNull(actualSourceProvider2);
 
             Assert.IsTrue(actualSourceProvider2.SourceProperties.Count == 1);
@@ -708,28 +708,47 @@ namespace PropertyDependencyFramework_Tests
             Assert.IsTrue(target2B.NumberOfChanges == 1);
         }
 
+        [TestMethod]
+        public void RegisterPropertyDependenciesForTypeInstance_SingleMockBindableBaseSinglePropertyWithTwoDependencies_PropertyChangedReactedToForAndOn()
+        {
+            var bindable1 = new MockBindableBaseSinglePropertyWithTwoDependencies();
+
+            var target = PropertyChangeRecorder.CreatePropertyChangeRecorder(bindable1, b => b.DependentProp);
+
+            bindable1.Input1 = 1; //On
+
+            if (target.NumberOfChanges != 1)
+            {
+                Assert.Inconclusive("The '.On' dependency didn't work. Cannot test '.AndOn' dependency.");
+            }
+
+            bindable1.Input2 = 2; //AndOn
+
+            Assert.IsTrue(target.NumberOfChanges == 2);
+        }
     }
+    #region MockBindableBase Classes
 
     public class SimpleMockBindableBase : BindableBase
     {
         public SimpleMockBindableBase()
         {
-            InitializePropertyDependencies();
+            InitializePropertyDependencies(
+                new Action[] { () => ActionCount++ });
         }
 
         public int ActionCount { get; set; }
-
-        protected override Action[] GetPropertyRegistrations()
-        {
-            return new Action[] {() => ActionCount++};
-        }
     }
 
     public class MockBindableBase : BindableBase
     {
         public MockBindableBase()
         {
-            InitializePropertyDependencies();
+            InitializePropertyDependencies(
+                new Action[]
+                {
+                    RegisterDependentProp,
+                });
         }
 
         //NOTE: Number of registrations in this class matters for some tests.
@@ -763,14 +782,6 @@ namespace PropertyDependencyFramework_Tests
                 NotifyPropertyChanged(() => InputProp);
             }
         }
-
-        protected override Action[] GetPropertyRegistrations()
-        {
-            return new Action[]
-            {
-                RegisterDependentProp
-            };
-        }
     }
 
     public class MockBindableBaseDependentOnMockBindableBase : BindableBase
@@ -779,7 +790,11 @@ namespace PropertyDependencyFramework_Tests
         {
             InputBindableBase = inputBindableBase;
 
-            InitializePropertyDependencies();
+            InitializePropertyDependencies(
+                new Action[]
+                {
+                    RegisterDependentProp,
+                });
         }
 
         //NOTE: Number of registrations in this class matters for some tests.
@@ -812,21 +827,19 @@ namespace PropertyDependencyFramework_Tests
                 NotifyPropertyChanged(() => InputBindableBase);
             }
         }
-
-        protected override Action[] GetPropertyRegistrations()
-        {
-            return new Action[]
-            {
-                RegisterDependentProp
-            };
-        }
     }
 
     public class MockMultipleDependenciesOnSelfBindableBase : BindableBase
     {
         public MockMultipleDependenciesOnSelfBindableBase()
         {
-            InitializePropertyDependencies();
+            InitializePropertyDependencies(
+                new Action[]
+                {
+                    RegisterDependentProp,
+                    RegisterDependentProp2,
+                });
+
         }
 
         //NOTE: Number of registrations in this class matters for some tests.
@@ -875,15 +888,6 @@ namespace PropertyDependencyFramework_Tests
                 NotifyPropertyChanged(() => InputProp);
             }
         }
-
-        protected override Action[] GetPropertyRegistrations()
-        {
-            return new Action[]
-            {
-                RegisterDependentProp,
-                RegisterDependentProp2
-            };
-        }
     }
 
     public class MockBindableBaseMultipleDependentciesOnMockMultipleDependenciesOnSelfBindableBase : BindableBase
@@ -893,7 +897,13 @@ namespace PropertyDependencyFramework_Tests
         {
             InputBindableBase = inputBindableBase;
 
-            InitializePropertyDependencies();
+            InitializePropertyDependencies(
+                new Action[]
+                {
+                    RegisterDependentOnBindableBaseProp,
+                    RegisterDependentOnBindableBaseProp2
+                });
+
         }
 
         //NOTE: Number of registrations in this class matters for some tests.
@@ -946,22 +956,19 @@ namespace PropertyDependencyFramework_Tests
                 NotifyPropertyChanged(() => InputBindableBase);
             }
         }
-
-        protected override Action[] GetPropertyRegistrations()
-        {
-            return new Action[]
-            {
-                RegisterDependentOnBindableBaseProp,
-                RegisterDependentOnBindableBaseProp2
-            };
-        }
     }
 
     public class MockMultipleDependenciesAndMultipleInputsOnSelfBindableBase : BindableBase
     {
         public MockMultipleDependenciesAndMultipleInputsOnSelfBindableBase()
         {
-            InitializePropertyDependencies();
+            InitializePropertyDependencies(
+                new Action[]
+                {
+                    RegisterDependentProp,
+                    RegisterDependentProp2
+                });
+
         }
 
         //NOTE: Number of registrations in this class matters for some tests.
@@ -1025,15 +1032,6 @@ namespace PropertyDependencyFramework_Tests
                 NotifyPropertyChanged(() => InputProp2);
             }
         }
-
-        protected override Action[] GetPropertyRegistrations()
-        {
-            return new Action[]
-            {
-                RegisterDependentProp,
-                RegisterDependentProp2
-            };
-        }
     }
 
     public class MockBindableBaseMultipleDependentciesOnMockMultipleDependenciesAndMultipleInputsOnSelfBindableBase :
@@ -1044,7 +1042,13 @@ namespace PropertyDependencyFramework_Tests
         {
             InputBindableBase = inputBindableBase;
 
-            InitializePropertyDependencies();
+            InitializePropertyDependencies(
+                new Action[]
+                {
+                    RegisterDependentOnBindableBaseProp,
+                    RegisterDependentOnBindableBaseProp2
+                });
+
         }
 
         //NOTE: Number of registrations in this class matters for some tests.
@@ -1098,15 +1102,62 @@ namespace PropertyDependencyFramework_Tests
                 NotifyPropertyChanged(() => InputBindableBase);
             }
         }
-
-        protected override Action[] GetPropertyRegistrations()
-        {
-            return new Action[]
-            {
-                RegisterDependentOnBindableBaseProp,
-                RegisterDependentOnBindableBaseProp2
-            };
-        }
     }
 
+    #endregion
+
+    public class MockBindableBaseSinglePropertyWithTwoDependencies : BindableBase
+    {
+        public MockBindableBaseSinglePropertyWithTwoDependencies()
+        {
+            InitializePropertyDependencies(
+                new Action[]
+                {
+                    RegisterDependentProp,
+                });
+        }
+
+        public void RegisterDependentProp()
+        {
+            TypeRegistrationProperty(() => DependentProp)
+                .Depends(p => p.On(this, sourceOwner => sourceOwner, () => Input1)
+                               .AndOn(this, sourceOwner => sourceOwner, () => Input2));
+        }
+
+        public decimal DependentProp
+        {
+            get
+            {
+                return Input1 + Input2;
+            }
+        }
+
+        private decimal _input1;
+        public decimal Input1
+        {
+            get { return _input1; }
+            set
+            {
+                if (value == _input1)
+                    return;
+
+                _input1 = value;
+                NotifyPropertyChanged(() => Input1);
+            }
+        }
+
+        private decimal _input2;
+        public decimal Input2
+        {
+            get { return _input2; }
+            set
+            {
+                if (value == _input2)
+                    return;
+
+                _input2 = value;
+                NotifyPropertyChanged(() => Input2);
+            }
+        }
+    }
 }

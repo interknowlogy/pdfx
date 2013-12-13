@@ -948,22 +948,17 @@ namespace PropertyDependencyFramework
         }
         #endregion
 
-        protected void InitializePropertyDependencies()
+        protected void InitializePropertyDependencies(Action[] propertyTypeRegistrationActions)
         {
             if (!_typeRegistrationProperties.ContainsKey(_thisType))
             {
-                foreach (Action propertyRegistration in GetPropertyRegistrations())
+                foreach (Action propertyRegistration in propertyTypeRegistrationActions)
                 {
                     propertyRegistration();
                 }
             }
 
             RegisterPropertyDependenciesForInstance();
-        }
-
-        protected virtual Action[] GetPropertyRegistrations()
-        {
-            return new Action[0];
         }
 
         private void RegisterPropertyDependenciesForInstance()

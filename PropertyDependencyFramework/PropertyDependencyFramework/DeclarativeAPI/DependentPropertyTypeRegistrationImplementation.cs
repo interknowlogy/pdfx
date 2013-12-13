@@ -25,6 +25,12 @@ namespace PropertyDependencyFramework
             return ThisDependsOn(sourceOwner, source, sourceProperty);
         }
 
+        public IPropertyDependencyTypeRegistration AndOn<TSourceOwner, TProperty>(TSourceOwner sourceOwner, Expression<Func<TSourceOwner, INotifyPropertyChanged>> source,
+            Expression<Func<TProperty>> sourceProperty)
+        {
+            return ThisDependsOn(sourceOwner, source, sourceProperty);
+        }
+
         private bool _registeredDependency;
         public IDependentPropertyTypeRegistration Depends(Action<IPropertyDependencyTypeRegistration> deferredPropDependency)
         {

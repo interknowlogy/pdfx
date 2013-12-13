@@ -8,5 +8,7 @@ namespace PropertyDependencyFramework
     {
         IPropertyDependencyTypeRegistration On<TSourceOwner, TProperty>(TSourceOwner sourceOwner,
             Expression<Func<TSourceOwner, INotifyPropertyChanged>> source, Expression<Func<TProperty>> sourceProperty);
+        IPropertyDependencyTypeRegistration AndOn<TSourceOwner, TProperty>(TSourceOwner sourceOwner,
+            Expression<Func<TSourceOwner, INotifyPropertyChanged>> source, Expression<Func<TProperty>> sourceProperty);
     }
 }
