@@ -362,7 +362,7 @@ namespace PropertyDependencyFramework
             if (registrationAlreadyCompleted)
                 return;
 
-            SubscribeToMasterPropertyOwner(masterPropertyOwner);
+            SubscribeToSource(masterPropertyOwner);
         }
 
         private bool CreatePropertyDependencyRegistration(INotifyPropertyChanged masterPropertyOwner, string masterPropertyName,
@@ -404,11 +404,14 @@ namespace PropertyDependencyFramework
             masterPropertyOwnerCollection.CollectionChanged += OnCollectionChanged;
 
             Action<object> registerNewItemDelegate = newItem => HiddenRegistrationAPI.RegisterPropertyDependency((INotifyPropertyChanged)newItem, masterPropertyName, dependentPropertyName);
+
             if (!_collectionDependencies.ContainsKey(masterPropertyOwnerCollection))
                 _collectionDependencies.Add(masterPropertyOwnerCollection, new CollectionPropertyDependencyRegistration());
 
             CollectionPropertyDependencyRegistration propertyDependencyRegistration = _collectionDependencies[masterPropertyOwnerCollection];
-            propertyDependencyRegistration.ItemPropertyDependencyRegistrationDelegates.Add(new CollectionPropertyDependencyRegistration.PropertyRegistrationIdentifier(masterPropertyName, dependentPropertyName), registerNewItemDelegate);
+            propertyDependencyRegistration.ItemPropertyDependencyRegistrationDelegates.Add(
+                new CollectionPropertyDependencyRegistration.PropertyRegistrationIdentifier(masterPropertyName, dependentPropertyName), 
+                registerNewItemDelegate);
 
             if (!propertyDependencyRegistration.DependentProperties.Contains(dependentPropertyName))
                 propertyDependencyRegistration.DependentProperties.Add(dependentPropertyName);
@@ -419,7 +422,7 @@ namespace PropertyDependencyFramework
             EnsurePropertyDependencyDictionaryContainsMasterObject(masterPropertyOwner);
             _propertyDependencies[masterPropertyOwner].Callbacks.Add(callbackContainer);
 
-            SubscribeToMasterPropertyOwner(masterPropertyOwner);
+            SubscribeToSource(masterPropertyOwner);
         }
 
         void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T>(T masterPropertyOwner, string masterPropertyName, CallbackContainer callbackContainer)
@@ -427,7 +430,7 @@ namespace PropertyDependencyFramework
             EnsurePropertyDependencyDictionaryAcceptsDependantProperties(masterPropertyOwner, masterPropertyName);
             _propertyDependencies[masterPropertyOwner].PropertyDependencies[masterPropertyName].Callbacks.Add(callbackContainer);
 
-            SubscribeToMasterPropertyOwner(masterPropertyOwner);
+            SubscribeToSource(masterPropertyOwner);
         }
 
         void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T>(INotifyCollectionChanged masterPropertyOwnerCollection, string masterPropertyName, CallbackContainer callbackContainer)
@@ -533,24 +536,24 @@ namespace PropertyDependencyFramework
                 {
                     _propertyDependencies[masterPropertyOwner].PropertyDependencies.Remove(masterPropertyName);
 
-                    UnsubscribeFromMasterPropertyOwner(masterPropertyOwner);
+                    UnsubscribeFromSource(masterPropertyOwner);
                 }
             }
         }
 
-        private void SubscribeToMasterPropertyOwner(INotifyPropertyChanged masterPropertyOwner)
+        private void SubscribeToSource(INotifyPropertyChanged source)
         {
-            BindableBase bindableMasterPropertyOwner = masterPropertyOwner as BindableBase;
+            BindableBase bindableMasterPropertyOwner = source as BindableBase;
             if (bindableMasterPropertyOwner == null)
             {
-                masterPropertyOwner.PropertyChanged -= OnPropertyOfDependencyChanged;
-                masterPropertyOwner.PropertyChanged += OnPropertyOfDependencyChanged;
+                source.PropertyChanged -= OnPropertyOfDependencyChanged;
+                source.PropertyChanged += OnPropertyOfDependencyChanged;
 
-                if (masterPropertyOwner is IDependencyFrameworkNotifyPropertyChangedInTransaction)
+                if (source is IDependencyFrameworkNotifyPropertyChangedInTransaction)
                 {
-                    ((IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner)
+                    ((IDependencyFrameworkNotifyPropertyChangedInTransaction)source)
                         .PropertyChangedInTransaction -= OnPropertyOfDependencyChangedInTransaction;
-                    ((IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner)
+                    ((IDependencyFrameworkNotifyPropertyChangedInTransaction)source)
                         .PropertyChangedInTransaction += OnPropertyOfDependencyChangedInTransaction;
                 }
             }
@@ -566,23 +569,33 @@ namespace PropertyDependencyFramework
             }
         }
 
-        private void UnsubscribeFromMasterPropertyOwner(INotifyPropertyChanged masterPropertyOwner)
+        private void UnsubscribeFromSource(INotifyPropertyChanged source)
         {
-            if (_propertyDependencies[masterPropertyOwner].PropertyDependencies.Count == 0 &&
-                _propertyDependencies[masterPropertyOwner].Callbacks.Count == 0)
+            if (_propertyDependencies[source].PropertyDependencies.Count == 0 &&
+                _propertyDependencies[source].Callbacks.Count == 0)
             {
-                _propertyDependencies.Remove(masterPropertyOwner);
-                masterPropertyOwner.PropertyChanged -= OnPropertyOfDependencyChanged;
-                if (masterPropertyOwner is IDependencyFrameworkNotifyPropertyChangedInTransaction)
+                _propertyDependencies.Remove(source);
+                source.PropertyChanged -= OnPropertyOfDependencyChanged;
+                if (source is IDependencyFrameworkNotifyPropertyChangedInTransaction)
                 {
-                    ((IDependencyFrameworkNotifyPropertyChangedInTransaction)masterPropertyOwner).PropertyChangedInTransaction -=
+                    ((IDependencyFrameworkNotifyPropertyChangedInTransaction)source).PropertyChangedInTransaction -=
                         OnPropertyOfDependencyChangedInTransaction;
                 }
-                if (masterPropertyOwner is BindableBase)
+                if (source is BindableBase)
                 {
-                    _registrationIdHashSet.Remove(((BindableBase)masterPropertyOwner).RegistrationId);
+                    _registrationIdHashSet.Remove(((BindableBase)source).RegistrationId);
                 }
             }
+        }
+
+        private void SubscribeToSourceCollection(INotifyCollectionChanged sourceCollection)
+        {
+            //TODO: Implement - SubscribeToSourceCollection
+        }
+
+        private void UnsubscribeFromSourceCollection(INotifyCollectionChanged sourceCollection)
+        {
+            //TODO: Implement - UnsubscribeFromSourceCollection
         }
 
         #endregion
@@ -977,7 +990,7 @@ namespace PropertyDependencyFramework
                         CreatePropertyDependencyRegistration(sourceInstance, sourceProperty.Name, dependentPropertyName);
                     }
                 }
-                SubscribeToMasterPropertyOwner(sourceInstance);
+                SubscribeToSource(sourceInstance);
             }
         }
 

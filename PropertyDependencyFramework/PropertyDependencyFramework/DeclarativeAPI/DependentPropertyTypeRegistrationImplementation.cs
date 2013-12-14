@@ -35,7 +35,7 @@ namespace PropertyDependencyFramework
             INotifyPropertyChanged>> source,
             Expression<Func<TProperty>> sourceProperty)
         {
-            return ThisDependsOn(sourceOwner, source, sourceProperty);
+            return On(sourceOwner, source, sourceProperty);
         }
 
         public IPropertyDependencyTypeRegistration OnCollectionChildProperty<TSourceOwner, TCollectionType, TCollectionItemPropertyType>(
