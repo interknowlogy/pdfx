@@ -764,12 +764,15 @@ namespace PropertyDependencyFramework_Tests
 
             //string expectedDependentPropertyName = "DependentProp";
             //Assert.AreEqual(expectedDependentPropertyName, actualSourceProperty.DependentPropertyNames[0]);
+
+            Assert.Fail();
         }
 
         [TestMethod]
         public void
             TypeRegistration_CollectionChildProperty_MockBindableBaseDfocDependency_NotifyPropertyChangedSubscribedOnlyOncePerChild()
         {
+            Assert.Fail();
 
         }
 
@@ -777,6 +780,7 @@ namespace PropertyDependencyFramework_Tests
         public void
             TypeRegistration_CollectionChildProperty_MockBindableBaseINotifyCollectionChangedDependency_CorrectInstanceDependeciesRegisteredPerChild()
         {
+            Assert.Fail();
 
         }
 
@@ -784,6 +788,7 @@ namespace PropertyDependencyFramework_Tests
         public void
             TypeRegistration_CollectionChildProperty_MockBindableBaseINotifyCollectionChangedDependency_NotifyPropertyChangedSubscribedOnlyOncePerChild()
         {
+            Assert.Fail();
 
         }
 
