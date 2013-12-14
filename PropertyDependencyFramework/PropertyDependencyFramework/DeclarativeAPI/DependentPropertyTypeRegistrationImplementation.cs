@@ -20,15 +20,40 @@ namespace PropertyDependencyFramework
             _typeRegistrationApi = typeRegistrationApi;
         }
 
-        public IPropertyDependencyTypeRegistration On<TSourceOwner, TProperty>(TSourceOwner sourceOwner, Expression<Func<TSourceOwner, INotifyPropertyChanged>> source, Expression<Func<TProperty>> sourceProperty)
+        public IPropertyDependencyTypeRegistration On<TSourceOwner, TProperty>(
+            TSourceOwner sourceOwner,
+            Expression<Func<TSourceOwner,
+            INotifyPropertyChanged>> source,
+            Expression<Func<TProperty>> sourceProperty)
         {
             return ThisDependsOn(sourceOwner, source, sourceProperty);
         }
 
-        public IPropertyDependencyTypeRegistration AndOn<TSourceOwner, TProperty>(TSourceOwner sourceOwner, Expression<Func<TSourceOwner, INotifyPropertyChanged>> source,
+        public IPropertyDependencyTypeRegistration AndOn<TSourceOwner, TProperty>(
+            TSourceOwner sourceOwner,
+            Expression<Func<TSourceOwner,
+            INotifyPropertyChanged>> source,
             Expression<Func<TProperty>> sourceProperty)
         {
             return ThisDependsOn(sourceOwner, source, sourceProperty);
+        }
+
+        public IPropertyDependencyTypeRegistration OnCollectionChildProperty<TSourceOwner, TCollectionType, TCollectionItemPropertyType>(
+            TSourceOwner sourceOwner,
+            Expression<Func<TSourceOwner, DependencyFrameworkObservableCollection<TCollectionType>>> sourceCollection,
+            Expression<Func<TCollectionType, TCollectionItemPropertyType>> collectionChildProperty)
+            where TCollectionType : INotifyPropertyChanged
+        {
+            throw new NotImplementedException();
+        }
+
+        public IPropertyDependencyTypeRegistration OnCollectionChildProperty<TSourceOwner, TCollectionType, TCollectionItemPropertyType>(
+            TSourceOwner sourceOwner,
+            Expression<Func<TSourceOwner, INotifyCollectionChanged>> sourceCollection,
+            Expression<Func<TCollectionType, TCollectionItemPropertyType>> collectionChildProperty)
+            where TCollectionType : INotifyPropertyChanged
+        {
+            throw new NotImplementedException();
         }
 
         private bool _registeredDependency;
