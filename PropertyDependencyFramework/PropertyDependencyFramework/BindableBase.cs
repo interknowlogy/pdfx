@@ -357,9 +357,9 @@ namespace PropertyDependencyFramework
         }
         void IBindableHiddenRegistrationAPI.RegisterPropertyDependency(INotifyPropertyChanged masterPropertyOwner, string masterPropertyName, string dependentPropertyName)
         {
-            bool registrationAlreadyCompleted = CreatePropertyDependencyRegistration(masterPropertyOwner, masterPropertyName, dependentPropertyName);
-         
-            if (registrationAlreadyCompleted)
+            bool isAlreadyRegistered = CreatePropertyDependencyRegistration(masterPropertyOwner, masterPropertyName, dependentPropertyName);
+
+            if (isAlreadyRegistered)
                 return;
 
             SubscribeToSource(masterPropertyOwner);
@@ -392,29 +392,46 @@ namespace PropertyDependencyFramework
 
         void IBindableHiddenRegistrationAPI.RegisterPropertyDependency(INotifyCollectionChanged masterPropertyOwnerCollection, string masterPropertyName, string dependentPropertyName)
         {
-            if (dependentPropertyName == null)
-                throw new ArgumentNullException(dependentPropertyName);
+            bool isAlreadyRegistered = CreateCollectionPropertyDependencyRegistration(masterPropertyOwnerCollection, masterPropertyName, dependentPropertyName);
 
-            foreach (INotifyPropertyChanged child in ((IEnumerable)masterPropertyOwnerCollection))
+            if (isAlreadyRegistered)
+                return;
+
+            SubscribeToSourceCollection(masterPropertyOwnerCollection);
+        }
+
+        private bool CreateCollectionPropertyDependencyRegistration(INotifyCollectionChanged collectionSourceInstance, string childSourceProperty, string dependentPropertyName)
+        {
+            if (dependentPropertyName == null)
+                throw new ArgumentNullException("dependentPropertyName");
+
+            foreach (INotifyPropertyChanged child in ((IEnumerable)collectionSourceInstance))
             {
-                HiddenRegistrationAPI.RegisterPropertyDependency(child, masterPropertyName, dependentPropertyName);
+                HiddenRegistrationAPI.RegisterPropertyDependency(child, childSourceProperty, dependentPropertyName);
             }
 
-            masterPropertyOwnerCollection.CollectionChanged -= OnCollectionChanged;
-            masterPropertyOwnerCollection.CollectionChanged += OnCollectionChanged;
 
-            Action<object> registerNewItemDelegate = newItem => HiddenRegistrationAPI.RegisterPropertyDependency((INotifyPropertyChanged)newItem, masterPropertyName, dependentPropertyName);
+            bool isAlreadyRegistered = _collectionDependencies.ContainsKey(collectionSourceInstance);
+            if (isAlreadyRegistered)
+                return true;
 
-            if (!_collectionDependencies.ContainsKey(masterPropertyOwnerCollection))
-                _collectionDependencies.Add(masterPropertyOwnerCollection, new CollectionPropertyDependencyRegistration());
+            _collectionDependencies.Add(collectionSourceInstance, new CollectionPropertyDependencyRegistration());
 
-            CollectionPropertyDependencyRegistration propertyDependencyRegistration = _collectionDependencies[masterPropertyOwnerCollection];
+            CollectionPropertyDependencyRegistration propertyDependencyRegistration = _collectionDependencies[collectionSourceInstance];
+
+            Action<object> registerAddedItemDelegate =
+                addedItem => HiddenRegistrationAPI.RegisterPropertyDependency((INotifyPropertyChanged)addedItem, childSourceProperty, dependentPropertyName);
+
+            //TODO: registerRemovedItemDelegate
+
             propertyDependencyRegistration.ItemPropertyDependencyRegistrationDelegates.Add(
-                new CollectionPropertyDependencyRegistration.PropertyRegistrationIdentifier(masterPropertyName, dependentPropertyName), 
-                registerNewItemDelegate);
+                new CollectionPropertyDependencyRegistration.PropertyRegistrationIdentifier(childSourceProperty, dependentPropertyName),
+                registerAddedItemDelegate);
 
             if (!propertyDependencyRegistration.DependentProperties.Contains(dependentPropertyName))
                 propertyDependencyRegistration.DependentProperties.Add(dependentPropertyName);
+
+            return false;
         }
 
         void IBindableHiddenRegistrationAPI.RegisterCallbackDependency<T>(T masterPropertyOwner, CallbackContainer callbackContainer)
@@ -590,7 +607,8 @@ namespace PropertyDependencyFramework
 
         private void SubscribeToSourceCollection(INotifyCollectionChanged sourceCollection)
         {
-            //TODO: Implement - SubscribeToSourceCollection
+            sourceCollection.CollectionChanged -= OnCollectionChanged;
+            sourceCollection.CollectionChanged += OnCollectionChanged;
         }
 
         private void UnsubscribeFromSourceCollection(INotifyCollectionChanged sourceCollection)
@@ -961,7 +979,10 @@ namespace PropertyDependencyFramework
         }
         #endregion
 
-        protected void InitializePropertyDependencies(Action[] propertyTypeRegistrationActions)
+        //TODO: Figure out some way even if a little hacky to force registrations to be called here
+        //  meaning the registration CANNOT be called in a derived class.
+        //  We want to force registrations to run only when the framework wants them to.
+        protected void InitializeTypeRegistrations(Action[] propertyTypeRegistrationActions)
         {
             if (!_typeRegistrationProperties.ContainsKey(_thisType))
             {
@@ -971,6 +992,7 @@ namespace PropertyDependencyFramework
                 }
             }
 
+            //TODO: Does this method call belong to InitializeTypeRegistrations???
             RegisterPropertyDependenciesForInstance();
         }
 
@@ -992,6 +1014,18 @@ namespace PropertyDependencyFramework
                 }
                 SubscribeToSource(sourceInstance);
             }
+
+            foreach (CollectionSourceProvider collectionSourceProvider in dependencies.CollectionSourceProviders.Values)
+            {
+                INotifyCollectionChanged sourceInstance = collectionSourceProvider.SourceRetrievalFunc(this);
+                foreach (ChildSourceProperty childSourceProperty in collectionSourceProvider.ChildSourceProperties.Values)
+                {
+                    foreach (string dependentPropertyName in childSourceProperty.DependentPropertyNames)
+                    {
+                        CreateCollectionPropertyDependencyRegistration(sourceInstance, childSourceProperty.Name, dependentPropertyName);
+                    }
+                }
+            }
         }
 
         #endregion
@@ -1002,9 +1036,11 @@ namespace PropertyDependencyFramework
         public TypeDependencies()
         {
             SourceProviders = new Dictionary<Type, SourceProvider>();
+            CollectionSourceProviders = new Dictionary<Type, CollectionSourceProvider>();
         }
 
         public Dictionary<Type, SourceProvider> SourceProviders { get; private set; }
+        public Dictionary<Type, CollectionSourceProvider> CollectionSourceProviders { get; private set; }
     }
 
     public class SourceProvider
@@ -1019,6 +1055,18 @@ namespace PropertyDependencyFramework
         public Dictionary<string, SourceProperty> SourceProperties { get; private set; }
     }
 
+    public class CollectionSourceProvider
+    {
+        public CollectionSourceProvider(Func<object, INotifyCollectionChanged> sourceRetrievalFunc)
+        {
+            SourceRetrievalFunc = sourceRetrievalFunc;
+            ChildSourceProperties = new Dictionary<string, ChildSourceProperty>();
+        }
+
+        public Func<object, INotifyCollectionChanged> SourceRetrievalFunc { get; private set; }
+        public Dictionary<string, ChildSourceProperty> ChildSourceProperties { get; private set; }
+    }
+
     public class SourceProperty
     {
         public SourceProperty(string name)
@@ -1026,6 +1074,18 @@ namespace PropertyDependencyFramework
             Name = name;
             DependentPropertyNames = new List<string>();
         }
+        public string Name { get; private set; }
+        public List<string> DependentPropertyNames { get; private set; }
+    }
+
+    public class ChildSourceProperty
+    {
+        public ChildSourceProperty(string name)
+        {
+            Name = name;
+            DependentPropertyNames = new List<string>();
+        }
+
         public string Name { get; private set; }
         public List<string> DependentPropertyNames { get; private set; }
     }
